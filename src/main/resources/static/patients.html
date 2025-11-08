@@ -1,45 +1,42 @@
 <!DOCTYPE html>
-<html lang="en" class="patients">
+<html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Patients – Hospital Management</title>
+    <meta charset="utf-8" />
+    <title>Patients — Hospital Management</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link rel="stylesheet" href="styles.css" />
   </head>
-
   <body class="patients">
     <div class="container">
-      <!-- Page Header -->
       <header class="header">
         <h1 class="title">Patient Management</h1>
-        <a class="btn" href="index.html">Home</a>
+        <a class="home-btn" href="#">Home</a>
       </header>
 
-      <div class="grid">
-        <!-- Patient Directory -->
-        <section class="card">
-          <div class="card__header">
-            <h2 class="card__title">Directory</h2>
+      <!-- Directory card -->
+      <section class="card">
+        <div class="card__header">
+          <h2 class="card__title">Directory</h2>
 
-            <!-- Search & Filters -->
-            <form class="search" action="/patients" method="get">
-              <input
-                class="input"
-                name="q"
-                placeholder="Search by name or phone"
-              />
-              <select class="select" name="status">
-                <option value="">Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-              <button class="btn" type="submit">Search</button>
-            </form>
+          <div class="search">
+            <input
+              id="searchInput"
+              class="input"
+              placeholder="Search by name or phone"
+            />
+            <select id="filterStatus" class="select">
+              <option value="">Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+            <button id="btnSearch" class="btn">Search</button>
           </div>
+        </div>
 
-          <!-- Patient List -->
-          <div class="card__body table-wrap">
-            <table aria-label="Patients table">
+        <div class="card__body">
+          <div class="table-wrap">
+            <div class="action-spacer" aria-hidden="true"></div>
+            <table id="patientsTable">
               <colgroup>
                 <col class="pt-name" />
                 <col class="pt-age" />
@@ -49,7 +46,6 @@
                 <col class="pt-status" />
                 <col class="pt-actions" />
               </colgroup>
-
               <thead>
                 <tr>
                   <th>Name</th>
@@ -57,131 +53,423 @@
                   <th>Gender</th>
                   <th>Phone</th>
                   <th>Email</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th style="text-align: center">Status</th>
+                  <th style="text-align: center">Actions</th>
                 </tr>
               </thead>
-
-              <tbody>
-                <!-- Sample Rows (to be replaced by backend data) -->
-                <tr>
-                  <td>Riya Sharma</td>
-                  <td>29</td>
-                  <td>F</td>
-                  <td>+91 98888 11122</td>
-                  <td>riya@example.com</td>
-                  <td><span class="pill pill--ok">Active</span></td>
-                  <td class="actions">
-                    <button class="btn">View</button>
-                    <button class="btn">Edit</button>
-                    <button class="btn btn--danger">Set Inactive</button>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>Arjun Mehta</td>
-                  <td>34</td>
-                  <td>M</td>
-                  <td>+91 97777 33344</td>
-                  <td>arjun@example.com</td>
-                  <td><span class="pill pill--warn">Review</span></td>
-                  <td class="actions">
-                    <button class="btn">View</button>
-                    <button class="btn">Edit</button>
-                    <button class="btn btn--danger">Set Inactive</button>
-                  </td>
-                </tr>
+              <tbody id="patientsTbody">
+                <!-- populated by JS -->
               </tbody>
             </table>
           </div>
 
-          <div class="card__body">
-            <!-- Endpoint reference for backend integration -->
-            <p class="note">Loaded from <code>GET /patients</code>.</p>
-          </div>
-        </section>
+          <p class="muted">Loaded from GET <code>/api/patients</code>.</p>
+        </div>
+      </section>
 
-        <!-- Patient Form -->
-        <aside class="card">
-          <div class="card__header">
-            <h2 class="card__title">Add / Edit Patient</h2>
-          </div>
+      <div style="height: 28px"></div>
 
-          <div class="card__body">
-            <form class="grid" action="/patients" method="post">
-              <!-- Basic Details -->
-              <div>
-                <label class="label" for="ptFullName">Full name</label>
-                <input class="input" id="ptFullName" name="fullName" required />
-              </div>
+      <!-- Add / Edit card -->
+      <aside class="card">
+        <div class="card__header">
+          <h2 class="card__title">Add / Edit Patient</h2>
+        </div>
+        <div class="card__body">
+          <form id="patientForm" class="grid">
+            <input id="editingId" type="hidden" />
 
-              <div class="two-col">
-                <div>
-                  <label class="label" for="ptDob">Date of birth</label>
-                  <input class="input" id="ptDob" name="dob" type="date" />
-                </div>
-                <div>
-                  <label class="label" for="ptGender">Gender</label>
-                  <select class="select" id="ptGender" name="gender">
-                    <option value="">Select gender</option>
-                    <option>F</option>
-                    <option>M</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-              </div>
+            <label class="label"
+              >Full name
+              <input id="fullName" class="input" />
+            </label>
 
-              <!-- Contact -->
-              <div class="two-col">
-                <div>
-                  <label class="label" for="ptPhone">Phone</label>
-                  <input class="input" id="ptPhone" name="phone" />
-                </div>
-                <div>
-                  <label class="label" for="ptEmail">Email</label>
-                  <input class="input" id="ptEmail" type="email" name="email" />
-                </div>
-              </div>
+            <div class="two-col">
+              <label class="label"
+                >Date of birth
+                <input id="dob" type="date" class="input" />
+              </label>
+              <label class="label"
+                >Gender
+                <select id="gender" class="select">
+                  <option value="">Select gender</option>
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                  <option value="O">Other</option>
+                </select>
+              </label>
+            </div>
 
-              <!-- Additional Details -->
-              <div>
-                <label class="label" for="ptAddress">Address</label>
-                <textarea
-                  class="textarea"
-                  id="ptAddress"
-                  name="address"
-                  placeholder="Street, city, pin…"
-                ></textarea>
-              </div>
+            <div class="two-col">
+              <label class="label"
+                >Phone
+                <input id="phone" class="input" />
+              </label>
+              <label class="label"
+                >Email
+                <input id="email" class="input" type="email" />
+              </label>
+            </div>
 
-              <div>
-                <label class="label" for="ptNotes">Notes</label>
-                <textarea
-                  class="textarea"
-                  id="ptNotes"
-                  name="notes"
-                  placeholder="Allergies, ongoing medications…"
-                ></textarea>
-              </div>
+            <label class="label"
+              >Address
+              <textarea
+                id="address"
+                class="textarea"
+                placeholder="Street, city, pin..."
+              ></textarea>
+            </label>
 
-              <!-- Actions -->
-              <div
-                style="
-                  display: flex;
-                  gap: 10px;
-                  flex-wrap: wrap;
-                  justify-content: flex-end;
-                "
-              >
-                <button class="btn" type="reset">Clear</button>
-                <button class="btn btn--ok" type="submit">Save Patient</button>
-              </div>
+            <label class="label"
+              >Notes
+              <textarea
+                id="notes"
+                class="textarea"
+                placeholder="Allergies, ongoing medications..."
+              ></textarea>
+            </label>
 
-              <p class="note">Submitted to <code>POST /patients</code>.</p>
-            </form>
-          </div>
-        </aside>
+            <div
+              style="
+                display: flex;
+                gap: 12px;
+                justify-content: flex-end;
+                align-items: center;
+                margin-top: 12px;
+              "
+            >
+              <button type="button" id="clearBtn" class="btn">Clear</button>
+              <button id="saveBtn" class="btn btn--ok">Save Patient</button>
+            </div>
+
+            <p class="muted" style="margin-top: 18px">
+              Submitted to POST/PUT <code>/api/patients</code>.
+            </p>
+          </form>
+        </div>
+      </aside>
+    </div>
+
+    <!-- View modal -->
+    <div id="viewModal" class="modal" aria-hidden="true" style="display: none">
+      <div class="modal__dialog">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <h3 id="modalName" style="margin: 0">Notes</h3>
+          <button id="modalClose" class="btn">Close</button>
+        </div>
+        <div id="modalNotes" class="modal-body" style="margin-top: 12px">—</div>
       </div>
     </div>
+
+    <script>
+      /* ---------- Client JS: full, final ---------- */
+
+      const API_BASE = "/api/patients";
+
+      /* DOM refs */
+      const tbody = document.getElementById("patientsTbody");
+      const form = document.getElementById("patientForm");
+      const editingId = document.getElementById("editingId");
+      const fullName = document.getElementById("fullName");
+      const dob = document.getElementById("dob");
+      const gender = document.getElementById("gender");
+      const phone = document.getElementById("phone");
+      const email = document.getElementById("email");
+      const address = document.getElementById("address");
+      const notes = document.getElementById("notes");
+      const clearBtn = document.getElementById("clearBtn");
+      const saveBtn = document.getElementById("saveBtn");
+      const searchBtn = document.getElementById("btnSearch");
+      const searchInput = document.getElementById("searchInput");
+      const filterStatus = document.getElementById("filterStatus");
+
+      const viewModal = document.getElementById("viewModal");
+      const modalClose = document.getElementById("modalClose");
+      const modalName = document.getElementById("modalName");
+      const modalNotes = document.getElementById("modalNotes");
+
+      /* helper: fetch single patient */
+      async function fetchPatientById(id) {
+        try {
+          const res = await fetch(`${API_BASE}/${id}`);
+          if (!res.ok) return null;
+          return await res.json();
+        } catch (e) {
+          console.error("fetchPatientById error", e);
+          return null;
+        }
+      }
+
+      /* compute age from YYYY-MM-DD */
+      function computeAgeFromDob(dobVal) {
+        if (!dobVal) return null;
+        const birth = new Date(dobVal);
+        if (isNaN(birth)) return null;
+        const now = new Date();
+        let age = now.getFullYear() - birth.getFullYear();
+        const m = now.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+        return age;
+      }
+
+      /* load patients */
+      async function bootLoad() {
+        try {
+          const res = await fetch(API_BASE);
+          if (!res.ok) throw new Error("Failed to load");
+          const list = await res.json();
+          renderList(list);
+        } catch (err) {
+          console.error(err);
+          tbody.innerHTML =
+            '<tr><td colspan="7" class="muted">Could not load patients.</td></tr>';
+        }
+      }
+
+      /* render table rows; keep fixed column order */
+      function renderList(list) {
+        tbody.innerHTML = "";
+        if (!Array.isArray(list) || list.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="7" class="muted">No patients found.</td></tr>';
+          return;
+        }
+
+        list.forEach((p) => {
+          const tr = document.createElement("tr");
+
+          const tdName = document.createElement("td");
+          tdName.textContent = p.name || "";
+          tr.appendChild(tdName);
+          const tdAge = document.createElement("td");
+          tdAge.textContent = p.age ?? "";
+          tr.appendChild(tdAge);
+          const tdGender = document.createElement("td");
+          tdGender.textContent = p.gender || "";
+          tr.appendChild(tdGender);
+          const tdPhone = document.createElement("td");
+          tdPhone.textContent = p.phoneNumber || "";
+          tr.appendChild(tdPhone);
+
+          const tdEmail = document.createElement("td");
+          tdEmail.className = "email-cell";
+          tdEmail.textContent = p.email || "—";
+          tr.appendChild(tdEmail);
+
+          const tdStatus = document.createElement("td");
+          tdStatus.className = "status-cell";
+          const span = document.createElement("span");
+          span.className =
+            "pill " + (p.status === "Active" ? "pill--ok" : "pill--warn");
+          span.textContent = p.status || "Unknown";
+          tdStatus.appendChild(span);
+          tr.appendChild(tdStatus);
+
+          const tdActions = document.createElement("td");
+          tdActions.className = "actions";
+          // View
+          const btnView = document.createElement("button");
+          btnView.className = "btn btn-view";
+          btnView.textContent = "View";
+          btnView.onclick = () => openView(p);
+          // Edit
+          const btnEdit = document.createElement("button");
+          btnEdit.className = "btn btn-edit";
+          btnEdit.textContent = "Edit";
+          btnEdit.onclick = () => populateForm(p);
+          // Delete
+          const btnDelete = document.createElement("button");
+          btnDelete.className = "btn btn-delete";
+          btnDelete.textContent = "Delete";
+          btnDelete.onclick = () => confirmDelete(p.patientId);
+
+          tdActions.append(btnView, btnEdit, btnDelete);
+          tr.appendChild(tdActions);
+
+          tbody.appendChild(tr);
+        });
+      }
+
+      /* view modal */
+      function openView(p) {
+        modalName.textContent = p.name ? p.name + " — Notes" : "Notes";
+        modalNotes.textContent = p.notes || "(no notes)";
+        viewModal.style.display = "flex";
+        viewModal.setAttribute("aria-hidden", "false");
+      }
+      modalClose.addEventListener("click", () => {
+        viewModal.style.display = "none";
+        viewModal.setAttribute("aria-hidden", "true");
+      });
+
+      /* populate edit form */
+      function populateForm(p) {
+        editingId.value = p.patientId || "";
+        fullName.value = p.name || "";
+        // optional: approximate dob if only age exists
+        if (!p.dob && p.age) {
+          const year = new Date().getFullYear() - Number(p.age);
+          dob.value = `${year}-01-01`;
+        } else {
+          dob.value = p.dob || "";
+        }
+        gender.value = p.gender || "";
+        phone.value = p.phoneNumber || "";
+        email.value = p.email || "";
+        address.value = p.address || "";
+        notes.value = p.notes || "";
+        window.scrollTo({
+          top: document.querySelector("aside.card").offsetTop - 20,
+          behavior: "smooth",
+        });
+      }
+
+      /* clear form */
+      clearBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        clearForm();
+      });
+      function clearForm() {
+        editingId.value = "";
+        fullName.value = "";
+        dob.value = "";
+        gender.value = "";
+        phone.value = "";
+        email.value = "";
+        address.value = "";
+        notes.value = "";
+      }
+
+      /* submit: compute age, include status to avoid DB null constraint */
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await submitForm();
+      });
+
+      async function submitForm() {
+        const id = editingId.value || null;
+        const nameVal = fullName.value.trim();
+        const dobVal = dob.value;
+        const ageVal = computeAgeFromDob(dobVal);
+        const genderVal = gender.value || null;
+        const phoneVal = phone.value.trim();
+        const emailVal = email.value.trim() || null;
+        const addressVal = address.value.trim() || null;
+        const notesVal = notes.value.trim() || null;
+
+        let payload = {
+          name: nameVal || null,
+          age: ageVal !== null ? ageVal : null,
+          gender: genderVal,
+          phoneNumber: phoneVal || null,
+          email: emailVal,
+          address: addressVal,
+          notes: notesVal,
+        };
+
+        // include status so DB non-null constraint doesn't fail
+        if (id) {
+          const existing = await fetchPatientById(id);
+          payload.status =
+            existing && existing.status ? existing.status : "Active";
+        } else {
+          payload.status = "Active";
+        }
+
+        // remove empty values (optional)
+        Object.keys(payload).forEach((k) => {
+          if (payload[k] === null || payload[k] === "") delete payload[k];
+        });
+
+        try {
+          const method = id ? "PUT" : "POST";
+          const url = id ? `${API_BASE}/${id}` : API_BASE;
+          const res = await fetch(url, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          let body = {};
+          try {
+            body = await res.json();
+          } catch (err) {}
+
+          if (!res.ok) {
+            console.error("Save failed response:", body);
+            if (body && body.details) {
+              const messages = Object.entries(body.details)
+                .map(([k, v]) => `${k}: ${v}`)
+                .join("\n");
+              alert("Save failed — validation errors:\n" + messages);
+            } else {
+              alert(
+                "Save failed: " + (body.error || res.statusText || res.status)
+              );
+            }
+            return;
+          }
+
+          clearForm();
+          await bootLoad();
+        } catch (err) {
+          console.error("Save failed (network):", err);
+          alert("Save failed (network). See console.");
+        }
+      }
+
+      /* delete */
+      async function confirmDelete(id) {
+        if (!confirm("Delete this patient?")) return;
+        try {
+          const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+          if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            alert("Delete failed: " + (body.error || res.status));
+            return;
+          }
+          await bootLoad();
+        } catch (err) {
+          console.error(err);
+          alert("Delete failed (network).");
+        }
+      }
+
+      /* search */
+      searchBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await doSearch();
+      });
+      async function doSearch() {
+        const q = (searchInput.value || "").trim().toLowerCase();
+        const status = (filterStatus.value || "").trim();
+        try {
+          const res = await fetch(API_BASE);
+          const list = await res.json();
+          let filtered = list;
+          if (q)
+            filtered = filtered.filter(
+              (p) =>
+                (p.name || "").toLowerCase().includes(q) ||
+                (p.phoneNumber || "").includes(q)
+            );
+          if (status)
+            filtered = filtered.filter(
+              (p) => (p.status || "").toLowerCase() === status.toLowerCase()
+            );
+          renderList(filtered);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      /* boot */
+      bootLoad();
+    </script>
   </body>
 </html>
