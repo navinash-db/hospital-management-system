@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" class="patients">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Patients – Hospital Management</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body class="patients">
+    <div class="container">
+      <!-- Page Header -->
+      <header class="header">
+        <h1 class="title">Patient Management</h1>
+        <a class="btn" href="index.html">Home</a>
+      </header>
+
+      <div class="grid">
+        <!-- Patient Directory -->
+        <section class="card">
+          <div class="card__header">
+            <h2 class="card__title">Directory</h2>
+
+            <!-- Search & Filters -->
+            <form class="search" action="/patients" method="get">
+              <input
+                class="input"
+                name="q"
+                placeholder="Search by name or phone"
+              />
+              <select class="select" name="status">
+                <option value="">Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+              <button class="btn" type="submit">Search</button>
+            </form>
+          </div>
+
+          <!-- Patient List -->
+          <div class="card__body table-wrap">
+            <table aria-label="Patients table">
+              <colgroup>
+                <col class="pt-name" />
+                <col class="pt-age" />
+                <col class="pt-gender" />
+                <col class="pt-phone" />
+                <col class="pt-email" />
+                <col class="pt-status" />
+                <col class="pt-actions" />
+              </colgroup>
+
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Age</th>
+                  <th>Gender</th>
+                  <th>Phone</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <!-- Sample Rows (to be replaced by backend data) -->
+                <tr>
+                  <td>Riya Sharma</td>
+                  <td>29</td>
+                  <td>F</td>
+                  <td>+91 98888 11122</td>
+                  <td>riya@example.com</td>
+                  <td><span class="pill pill--ok">Active</span></td>
+                  <td class="actions">
+                    <button class="btn">View</button>
+                    <button class="btn">Edit</button>
+                    <button class="btn btn--danger">Set Inactive</button>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>Arjun Mehta</td>
+                  <td>34</td>
+                  <td>M</td>
+                  <td>+91 97777 33344</td>
+                  <td>arjun@example.com</td>
+                  <td><span class="pill pill--warn">Review</span></td>
+                  <td class="actions">
+                    <button class="btn">View</button>
+                    <button class="btn">Edit</button>
+                    <button class="btn btn--danger">Set Inactive</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card__body">
+            <!-- Endpoint reference for backend integration -->
+            <p class="note">Loaded from <code>GET /patients</code>.</p>
+          </div>
+        </section>
+
+        <!-- Patient Form -->
+        <aside class="card">
+          <div class="card__header">
+            <h2 class="card__title">Add / Edit Patient</h2>
+          </div>
+
+          <div class="card__body">
+            <form class="grid" action="/patients" method="post">
+              <!-- Basic Details -->
+              <div>
+                <label class="label" for="ptFullName">Full name</label>
+                <input class="input" id="ptFullName" name="fullName" required />
+              </div>
+
+              <div class="two-col">
+                <div>
+                  <label class="label" for="ptDob">Date of birth</label>
+                  <input class="input" id="ptDob" name="dob" type="date" />
+                </div>
+                <div>
+                  <label class="label" for="ptGender">Gender</label>
+                  <select class="select" id="ptGender" name="gender">
+                    <option value="">Select gender</option>
+                    <option>F</option>
+                    <option>M</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Contact -->
+              <div class="two-col">
+                <div>
+                  <label class="label" for="ptPhone">Phone</label>
+                  <input class="input" id="ptPhone" name="phone" />
+                </div>
+                <div>
+                  <label class="label" for="ptEmail">Email</label>
+                  <input class="input" id="ptEmail" type="email" name="email" />
+                </div>
+              </div>
+
+              <!-- Additional Details -->
+              <div>
+                <label class="label" for="ptAddress">Address</label>
+                <textarea
+                  class="textarea"
+                  id="ptAddress"
+                  name="address"
+                  placeholder="Street, city, pin…"
+                ></textarea>
+              </div>
+
+              <div>
+                <label class="label" for="ptNotes">Notes</label>
+                <textarea
+                  class="textarea"
+                  id="ptNotes"
+                  name="notes"
+                  placeholder="Allergies, ongoing medications…"
+                ></textarea>
+              </div>
+
+              <!-- Actions -->
+              <div
+                style="
+                  display: flex;
+                  gap: 10px;
+                  flex-wrap: wrap;
+                  justify-content: flex-end;
+                "
+              >
+                <button class="btn" type="reset">Clear</button>
+                <button class="btn btn--ok" type="submit">Save Patient</button>
+              </div>
+
+              <p class="note">Submitted to <code>POST /patients</code>.</p>
+            </form>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </body>
+</html>

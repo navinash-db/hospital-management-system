@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" class="appointments">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Appointments – Hospital Management</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body class="appointments">
+    <div class="container">
+      <!-- Page Header -->
+      <header class="header">
+        <h1 class="title">Appointment Management</h1>
+        <a class="btn" href="index.html">Home</a>
+      </header>
+
+      <div class="grid">
+        <!-- Appointment List -->
+        <section class="card">
+          <div class="card__header">
+            <h2 class="card__title">Appointments</h2>
+
+            <!-- Filters -->
+            <form class="search" action="/appointments" method="get">
+              <input class="input" name="date" type="date" />
+              <select class="select" name="doctorId">
+                <option value="">Doctor</option>
+                <option value="DR-101">Dr. Kavya N.</option>
+                <option value="DR-205">Dr. Aman R.</option>
+              </select>
+              <button class="btn" type="submit">Filter</button>
+            </form>
+          </div>
+
+          <!-- Table -->
+          <div class="card__body table-wrap">
+            <table aria-label="Appointments table">
+              <colgroup>
+                <col class="app-patient" />
+                <col class="app-doctor" />
+                <col class="app-status" />
+                <col class="app-actions" />
+              </colgroup>
+
+              <thead>
+                <tr>
+                  <th>Patient</th>
+                  <th>Doctor</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <!-- Sample Rows -->
+                <tr>
+                  <td>Riya Sharma</td>
+                  <td>Dr. Kavya N.</td>
+                  <td><span class="pill pill--ok">Booked</span></td>
+                  <td>
+                    <button class="btn btn--ok">Complete</button>
+                    <button class="btn btn--danger">Cancel</button>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>Arjun Mehta</td>
+                  <td>Dr. Aman R.</td>
+                  <td><span class="pill pill--warn">Pending</span></td>
+                  <td>
+                    <button class="btn btn--ok">Complete</button>
+                    <button class="btn btn--danger">Cancel</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card__body">
+            <!-- Backend reference -->
+            <p class="note">Loaded from <code>GET /appointments</code>.</p>
+          </div>
+        </section>
+
+        <!-- Appointment Form -->
+        <aside class="card">
+          <div class="card__header">
+            <h2 class="card__title">Book Appointment</h2>
+          </div>
+
+          <div class="card__body">
+            <form class="grid" action="/appointments" method="post">
+              <!-- Patient Selection -->
+              <div>
+                <label class="label" for="patientId">Patient</label>
+                <select class="select" id="patientId" name="patientId" required>
+                  <option value="">Select patient</option>
+                  <option value="PT-001">Riya Sharma</option>
+                  <option value="PT-002">Arjun Mehta</option>
+                </select>
+              </div>
+
+              <!-- Notes -->
+              <div>
+                <label class="label" for="notes">Notes</label>
+                <textarea
+                  class="textarea"
+                  id="notes"
+                  name="notes"
+                  placeholder="Reason for visit, symptoms..."
+                ></textarea>
+              </div>
+
+              <!-- Actions -->
+              <div
+                style="
+                  display: flex;
+                  gap: 10px;
+                  flex-wrap: wrap;
+                  justify-content: flex-end;
+                "
+              >
+                <button class="btn" type="reset">Clear</button>
+                <button class="btn btn--ok" type="submit">Book</button>
+              </div>
+
+              <p class="note">Submitted to <code>POST /appointments</code>.</p>
+            </form>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </body>
+</html>

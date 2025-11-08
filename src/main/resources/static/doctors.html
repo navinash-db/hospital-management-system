@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" class="doctors">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Doctor & Staff Management</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body class="doctors">
+    <div class="container">
+      <!-- Page Header -->
+      <header class="header">
+        <h1 class="title">Doctor & Staff Management</h1>
+        <a class="btn" href="index.html">Home</a>
+      </header>
+
+      <div class="grid">
+        <!-- Staff Directory -->
+        <section class="card">
+          <div class="card__header">
+            <h2 class="card__title">Directory</h2>
+
+            <!-- Search & Filters -->
+            <form class="search" action="/doctors" method="get">
+              <input
+                class="input"
+                name="q"
+                placeholder="Search by name or specialization"
+              />
+              <select class="select" name="department">
+                <option value="">Department</option>
+                <option>Cardiology</option>
+                <option>Neurology</option>
+                <option>Orthopedics</option>
+                <option>Dermatology</option>
+              </select>
+              <button class="btn" type="submit">Search</button>
+            </form>
+          </div>
+
+          <!-- Staff Table -->
+          <div class="card__body table-wrap">
+            <table aria-label="Doctors table">
+              <colgroup>
+                <col class="doc-spec" />
+                <col class="doc-phone" />
+                <col class="doc-email" />
+                <col class="doc-status" />
+                <col class="doc-actions" />
+              </colgroup>
+
+              <thead>
+                <tr>
+                  <th>Specialization</th>
+                  <th>Phone</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <!-- Sample Rows -->
+                <tr>
+                  <td>Interventional Cardiology</td>
+                  <td>+91 98888 11122</td>
+                  <td>kavya@example.com</td>
+                  <td><span class="pill pill--ok">Active</span></td>
+                  <td class="actions">
+                    <button class="btn">View</button>
+                    <button class="btn">Edit</button>
+                    <button class="btn btn--danger">Set Inactive</button>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>—</td>
+                  <td>+91 97777 33344</td>
+                  <td>rahul@example.com</td>
+                  <td><span class="pill pill--warn">On Leave</span></td>
+                  <td class="actions">
+                    <button class="btn">View</button>
+                    <button class="btn">Edit</button>
+                    <button class="btn btn--danger">Set Inactive</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card__body">
+            <!-- Backend reference -->
+            <p class="note">Loaded from <code>GET /doctors</code>.</p>
+          </div>
+        </section>
+
+        <!-- Staff Form -->
+        <aside class="card">
+          <div class="card__header">
+            <h2 class="card__title">Add / Edit Staff</h2>
+          </div>
+
+          <div class="card__body">
+            <form class="grid" action="/doctors" method="post">
+              <!-- Basic Details -->
+              <div>
+                <label class="label" for="fullName">Full name</label>
+                <input id="fullName" class="input" name="fullName" required />
+              </div>
+
+              <div class="two-col">
+                <div>
+                  <label class="label" for="role">Role</label>
+                  <select id="role" class="select" name="role" required>
+                    <option value="">Select role</option>
+                    <option>Doctor</option>
+                    <option>Nurse</option>
+                    <option>Receptionist</option>
+                    <option>Admin</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="label" for="dept">Department</label>
+                  <select id="dept" class="select" name="department">
+                    <option value="">Select department</option>
+                    <option>Cardiology</option>
+                    <option>Neurology</option>
+                    <option>Orthopedics</option>
+                    <option>Dermatology</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Contact -->
+              <div class="two-col">
+                <div>
+                  <label class="label" for="phone">Phone</label>
+                  <input id="phone" class="input" name="phone" />
+                </div>
+
+                <div>
+                  <label class="label" for="email">Email</label>
+                  <input id="email" class="input" type="email" name="email" />
+                </div>
+              </div>
+
+              <!-- Form Actions -->
+              <div
+                style="
+                  display: flex;
+                  gap: 10px;
+                  flex-wrap: wrap;
+                  justify-content: flex-end;
+                "
+              >
+                <button class="btn" type="reset">Clear</button>
+                <button class="btn btn--ok" type="submit">Save Staff</button>
+              </div>
+
+              <p class="note">Submitted to <code>POST /doctors</code>.</p>
+            </form>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </body>
+</html>
