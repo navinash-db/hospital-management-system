@@ -69,8 +69,8 @@ public class AppointmentService {
     private AppointmentDTO convertToDTO(Appointment a) {
         AppointmentDTO dto = new AppointmentDTO();
         dto.setAppointmentId(a.getAppointmentId());
-        dto.setDoctorId(a.getDoctor().getDoctorId());
-        dto.setDoctorName(a.getDoctor().getFullName());
+        dto.setDoctorId(a.getDoctor().getId());
+        dto.setDoctorName(a.getDoctor().getDoctorName());
         dto.setPatientId(a.getPatient().getPatientId());
         dto.setPatientName(a.getPatient().getName());
         dto.setAppointmentDate(a.getAppointmentDate());
