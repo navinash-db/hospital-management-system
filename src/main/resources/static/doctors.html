@@ -1,169 +1,303 @@
 <!DOCTYPE html>
-<html lang="en" class="doctors">
+<html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Doctor & Staff Management</title>
+    <meta charset="utf-8" />
+    <title>Doctors — Hospital Management</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link rel="stylesheet" href="styles.css" />
   </head>
-
   <body class="doctors">
     <div class="container">
-      <!-- Page Header -->
       <header class="header">
-        <h1 class="title">Doctor & Staff Management</h1>
-        <a class="btn" href="index.html">Home</a>
+        <h1 class="title">Doctor Management</h1>
+        <a class="home-btn" href="index.html">Home</a>
       </header>
 
-      <div class="grid">
-        <!-- Staff Directory -->
-        <section class="card">
-          <div class="card__header">
-            <h2 class="card__title">Directory</h2>
+      <!-- Doctor Directory -->
+      <section class="card">
+        <div class="card__header">
+          <h2 class="card__title">Directory</h2>
 
-            <!-- Search & Filters -->
-            <form class="search" action="/doctors" method="get">
-              <input
-                class="input"
-                name="q"
-                placeholder="Search by name or specialization"
-              />
-              <select class="select" name="department">
-                <option value="">Department</option>
-                <option>Cardiology</option>
-                <option>Neurology</option>
-                <option>Orthopedics</option>
-                <option>Dermatology</option>
-              </select>
-              <button class="btn" type="submit">Search</button>
-            </form>
+          <div class="search">
+            <input
+              id="searchInput"
+              class="input"
+              placeholder="Search by name or specialization"
+            />
+            <select id="filterStatus" class="select">
+              <option value="">Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+            <button id="btnSearch" class="btn">Search</button>
           </div>
+        </div>
 
-          <!-- Staff Table -->
-          <div class="card__body table-wrap">
-            <table aria-label="Doctors table">
+        <div class="card__body">
+          <div class="table-wrap">
+            <table id="doctorsTable">
               <colgroup>
-                <col class="doc-spec" />
-                <col class="doc-phone" />
-                <col class="doc-email" />
-                <col class="doc-status" />
-                <col class="doc-actions" />
+                <col class="pt-name" />
+                <col class="pt-email" />
+                <col class="pt-phone" />
+                <col class="pt-status" />
+                <col class="pt-actions" />
               </colgroup>
-
               <thead>
                 <tr>
+                  <th>Name</th>
                   <th>Specialization</th>
                   <th>Phone</th>
                   <th>Email</th>
                   <th>Status</th>
-                  <th>Actions</th>
+                  <th style="text-align: center">Actions</th>
                 </tr>
               </thead>
-
-              <tbody>
-                <!-- Sample Rows -->
-                <tr>
-                  <td>Interventional Cardiology</td>
-                  <td>+91 98888 11122</td>
-                  <td>kavya@example.com</td>
-                  <td><span class="pill pill--ok">Active</span></td>
-                  <td class="actions">
-                    <button class="btn">View</button>
-                    <button class="btn">Edit</button>
-                    <button class="btn btn--danger">Set Inactive</button>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>—</td>
-                  <td>+91 97777 33344</td>
-                  <td>rahul@example.com</td>
-                  <td><span class="pill pill--warn">On Leave</span></td>
-                  <td class="actions">
-                    <button class="btn">View</button>
-                    <button class="btn">Edit</button>
-                    <button class="btn btn--danger">Set Inactive</button>
-                  </td>
-                </tr>
+              <tbody id="doctorsTbody">
+                <!-- populated by JS -->
               </tbody>
             </table>
           </div>
 
-          <div class="card__body">
-            <!-- Backend reference -->
-            <p class="note">Loaded from <code>GET /doctors</code>.</p>
-          </div>
-        </section>
+          <p class="muted">Loaded from GET <code>/api/doctors</code>.</p>
+        </div>
+      </section>
 
-        <!-- Staff Form -->
-        <aside class="card">
-          <div class="card__header">
-            <h2 class="card__title">Add / Edit Staff</h2>
-          </div>
+      <div style="height: 28px"></div>
 
-          <div class="card__body">
-            <form class="grid" action="/doctors" method="post">
-              <!-- Basic Details -->
-              <div>
-                <label class="label" for="fullName">Full name</label>
-                <input id="fullName" class="input" name="fullName" required />
-              </div>
+      <!-- Add / Edit Doctor -->
+      <aside class="card">
+        <div class="card__header">
+          <h2 class="card__title">Add / Edit Doctor</h2>
+        </div>
+        <div class="card__body">
+          <form id="doctorForm" class="grid">
+            <input id="editingId" type="hidden" />
 
-              <div class="two-col">
-                <div>
-                  <label class="label" for="role">Role</label>
-                  <select id="role" class="select" name="role" required>
-                    <option value="">Select role</option>
-                    <option>Doctor</option>
-                    <option>Nurse</option>
-                    <option>Receptionist</option>
-                    <option>Admin</option>
-                  </select>
-                </div>
+            <label class="label"
+              >Full name
+              <input id="fullName" class="input" />
+            </label>
 
-                <div>
-                  <label class="label" for="dept">Department</label>
-                  <select id="dept" class="select" name="department">
-                    <option value="">Select department</option>
-                    <option>Cardiology</option>
-                    <option>Neurology</option>
-                    <option>Orthopedics</option>
-                    <option>Dermatology</option>
-                  </select>
-                </div>
-              </div>
+            <label class="label"
+              >Specialization
+              <select id="specialization" class="select" required>
+                <option value="">Select specialization</option>
+                <option value="General Medicine">General Medicine</option>
+                <option value="Cardiology">Cardiology</option>
+                <option value="Neurology">Neurology</option>
+                <option value="Orthopedics">Orthopedics</option>
+              </select>
+            </label>
 
-              <!-- Contact -->
-              <div class="two-col">
-                <div>
-                  <label class="label" for="phone">Phone</label>
-                  <input id="phone" class="input" name="phone" />
-                </div>
+            <div class="two-col">
+              <label class="label"
+                >Phone
+                <input id="phone" class="input" />
+              </label>
+              <label class="label"
+                >Email
+                <input id="email" class="input" type="email" />
+              </label>
+            </div>
 
-                <div>
-                  <label class="label" for="email">Email</label>
-                  <input id="email" class="input" type="email" name="email" />
-                </div>
-              </div>
+            <div class="two-col">
+              <label class="label"
+                >Status
+                <select id="status" class="select">
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </label>
+            </div>
 
-              <!-- Form Actions -->
-              <div
-                style="
-                  display: flex;
-                  gap: 10px;
-                  flex-wrap: wrap;
-                  justify-content: flex-end;
-                "
-              >
-                <button class="btn" type="reset">Clear</button>
-                <button class="btn btn--ok" type="submit">Save Staff</button>
-              </div>
+            <div
+              style="
+                display: flex;
+                gap: 12px;
+                justify-content: flex-end;
+                align-items: center;
+                margin-top: 12px;
+              "
+            >
+              <button type="button" id="clearBtn" class="btn">Clear</button>
+              <button id="saveBtn" class="btn btn--ok">Save Doctor</button>
+            </div>
 
-              <p class="note">Submitted to <code>POST /doctors</code>.</p>
-            </form>
-          </div>
-        </aside>
-      </div>
+            <p class="muted" style="margin-top: 18px">
+              Submitted to POST/PUT <code>/api/doctors</code>.
+            </p>
+          </form>
+        </div>
+      </aside>
     </div>
+
+    <script>
+      /* ---------------------- Doctor Management ---------------------- */
+      const API_BASE = "/api/doctors";
+
+      const tbody = document.getElementById("doctorsTbody");
+      const form = document.getElementById("doctorForm");
+      const editingId = document.getElementById("editingId");
+      const fullName = document.getElementById("fullName");
+      const specialization = document.getElementById("specialization");
+      const phone = document.getElementById("phone");
+      const email = document.getElementById("email");
+      const status = document.getElementById("status");
+      const clearBtn = document.getElementById("clearBtn");
+      const searchBtn = document.getElementById("btnSearch");
+      const searchInput = document.getElementById("searchInput");
+      const filterStatus = document.getElementById("filterStatus");
+
+      async function bootLoad() {
+        try {
+          const res = await fetch(API_BASE);
+          if (!res.ok) throw new Error("Failed to load doctors");
+          const list = await res.json();
+          renderList(list);
+        } catch (err) {
+          console.error(err);
+          tbody.innerHTML =
+            '<tr><td colspan="6" class="muted">Could not load doctors.</td></tr>';
+        }
+      }
+
+      function renderList(list) {
+        tbody.innerHTML = "";
+        if (!Array.isArray(list) || list.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="6" class="muted">No doctors found.</td></tr>';
+          return;
+        }
+
+        list.forEach((d) => {
+          const tr = document.createElement("tr");
+
+          tr.innerHTML = `
+            <td>${d.name || ""}</td>
+            <td>${d.specialization || ""}</td>
+            <td>${d.phoneNumber || ""}</td>
+            <td>${d.email || ""}</td>
+            <td><span class="pill ${
+              d.status === "Active" ? "pill--ok" : "pill--warn"
+            }">${d.status || "Inactive"}</span></td>
+            <td class="actions">
+              <button class="btn btn-edit" onclick='editDoctor(${JSON.stringify(
+                d
+              )})'>Edit</button>
+              <button class="btn btn-delete" onclick="deleteDoctor(${
+                d.doctorId
+              })">Delete</button>
+            </td>
+          `;
+
+          tbody.appendChild(tr);
+        });
+      }
+
+      function clearForm() {
+        editingId.value = "";
+        fullName.value = "";
+        specialization.value = "";
+        phone.value = "";
+        email.value = "";
+        status.value = "Active";
+      }
+      clearBtn.addEventListener("click", clearForm);
+
+      function editDoctor(d) {
+        editingId.value = d.doctorId || "";
+        fullName.value = d.name || "";
+        specialization.value = d.specialization || "";
+        phone.value = d.phoneNumber || "";
+        email.value = d.email || "";
+        status.value = d.status || "Active";
+        window.scrollTo({ top: form.offsetTop - 20, behavior: "smooth" });
+      }
+
+      async function deleteDoctor(id) {
+        if (!confirm("Delete this doctor?")) return;
+        try {
+          const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+          if (!res.ok) throw new Error("Failed to delete");
+          await bootLoad();
+        } catch (err) {
+          console.error(err);
+          alert("Delete failed. See console.");
+        }
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await submitForm();
+      });
+
+      async function submitForm() {
+        const id = editingId.value || null;
+        const payload = {
+          name: fullName.value.trim(),
+          specialization: specialization.value.trim(),
+          phoneNumber: phone.value.trim(),
+          email: email.value.trim(),
+          status: status.value,
+        };
+
+        try {
+          const method = id ? "PUT" : "POST";
+          const url = id ? `${API_BASE}/${id}` : API_BASE;
+          const res = await fetch(url, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            alert("Save failed: " + (body.error || res.statusText));
+            return;
+          }
+
+          clearForm();
+          await bootLoad();
+        } catch (err) {
+          console.error("Save failed:", err);
+        }
+      }
+
+      searchBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await doSearch();
+      });
+
+      async function doSearch() {
+        const q = (searchInput.value || "").trim().toLowerCase();
+        const statusFilter = (filterStatus.value || "").trim();
+
+        try {
+          const res = await fetch(API_BASE);
+          const list = await res.json();
+          let filtered = list;
+
+          if (q)
+            filtered = filtered.filter(
+              (d) =>
+                (d.name || "").toLowerCase().includes(q) ||
+                (d.specialization || "").toLowerCase().includes(q)
+            );
+
+          if (statusFilter)
+            filtered = filtered.filter(
+              (d) =>
+                (d.status || "").toLowerCase() === statusFilter.toLowerCase()
+            );
+
+          renderList(filtered);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      bootLoad();
+    </script>
   </body>
 </html>
