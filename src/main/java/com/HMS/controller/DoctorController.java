@@ -40,6 +40,11 @@ public class DoctorController {
         return ResponseEntity.ok(doctorService.setInactive(id));
     }
 
+    @PutMapping("/{id}/active")
+    public ResponseEntity<Doctor> setActive(@PathVariable Long id) {
+        return ResponseEntity.ok(doctorService.setActive(id));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteDoctor(@PathVariable Long id) {
         doctorService.deleteDoctor(id);

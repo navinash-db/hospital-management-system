@@ -49,4 +49,10 @@ public class DoctorService {
     public void deleteDoctor(Long id) {
         doctorRepository.deleteById(id);
     }
+    public Doctor setActive(Long id) {
+        Doctor doctor = getDoctorById(id);
+        doctor.setStatus("Active");
+        return doctorRepository.save(doctor);
+    }
+
 }
