@@ -1,135 +1,187 @@
 <!DOCTYPE html>
-<html lang="en" class="appointments">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Appointments – Hospital Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Appointments | Hospital Management System</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
-
-  <body class="appointments">
+  <body>
     <div class="container">
-      <!-- Page Header -->
-      <header class="header">
-        <h1 class="title">Appointment Management</h1>
-        <a class="btn" href="index.html">Home</a>
-      </header>
+      <h1>Appointment Management</h1>
 
-      <div class="grid">
-        <!-- Appointment List -->
-        <section class="card">
-          <div class="card__header">
-            <h2 class="card__title">Appointments</h2>
+      <!-- Appointment Form -->
+      <section class="card">
+        <h2>Book Appointment</h2>
+        <form id="appointmentForm">
+          <label for="patientId">Select Patient:</label>
+          <select id="patientId" required>
+            <option value="">Loading...</option>
+          </select>
 
-            <!-- Filters -->
-            <form class="search" action="/appointments" method="get">
-              <input class="input" name="date" type="date" />
-              <select class="select" name="doctorId">
-                <option value="">Doctor</option>
-                <option value="DR-101">Dr. Kavya N.</option>
-                <option value="DR-205">Dr. Aman R.</option>
-              </select>
-              <button class="btn" type="submit">Filter</button>
-            </form>
-          </div>
+          <label for="doctorId">Select Doctor:</label>
+          <select id="doctorId" required>
+            <option value="">Loading...</option>
+          </select>
 
-          <!-- Table -->
-          <div class="card__body table-wrap">
-            <table aria-label="Appointments table">
-              <colgroup>
-                <col class="app-patient" />
-                <col class="app-doctor" />
-                <col class="app-status" />
-                <col class="app-actions" />
-              </colgroup>
+          <label for="appointmentDate">Appointment Date & Time:</label>
+          <input type="datetime-local" id="appointmentDate" required />
 
-              <thead>
-                <tr>
-                  <th>Patient</th>
-                  <th>Doctor</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
+          <label for="notes">Notes:</label>
+          <textarea
+            id="notes"
+            placeholder="Enter reason for visit..."
+            rows="3"
+          ></textarea>
 
-              <tbody>
-                <!-- Sample Rows -->
-                <tr>
-                  <td>Riya Sharma</td>
-                  <td>Dr. Kavya N.</td>
-                  <td><span class="pill pill--ok">Booked</span></td>
-                  <td>
-                    <button class="btn btn--ok">Complete</button>
-                    <button class="btn btn--danger">Cancel</button>
-                  </td>
-                </tr>
+          <button type="submit" class="btn btn--ok">Book Appointment</button>
+        </form>
+      </section>
 
-                <tr>
-                  <td>Arjun Mehta</td>
-                  <td>Dr. Aman R.</td>
-                  <td><span class="pill pill--warn">Pending</span></td>
-                  <td>
-                    <button class="btn btn--ok">Complete</button>
-                    <button class="btn btn--danger">Cancel</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="card__body">
-            <!-- Backend reference -->
-            <p class="note">Loaded from <code>GET /appointments</code>.</p>
-          </div>
-        </section>
-
-        <!-- Appointment Form -->
-        <aside class="card">
-          <div class="card__header">
-            <h2 class="card__title">Book Appointment</h2>
-          </div>
-
-          <div class="card__body">
-            <form class="grid" action="/appointments" method="post">
-              <!-- Patient Selection -->
-              <div>
-                <label class="label" for="patientId">Patient</label>
-                <select class="select" id="patientId" name="patientId" required>
-                  <option value="">Select patient</option>
-                  <option value="PT-001">Riya Sharma</option>
-                  <option value="PT-002">Arjun Mehta</option>
-                </select>
-              </div>
-
-              <!-- Notes -->
-              <div>
-                <label class="label" for="notes">Notes</label>
-                <textarea
-                  class="textarea"
-                  id="notes"
-                  name="notes"
-                  placeholder="Reason for visit, symptoms..."
-                ></textarea>
-              </div>
-
-              <!-- Actions -->
-              <div
-                style="
-                  display: flex;
-                  gap: 10px;
-                  flex-wrap: wrap;
-                  justify-content: flex-end;
-                "
-              >
-                <button class="btn" type="reset">Clear</button>
-                <button class="btn btn--ok" type="submit">Book</button>
-              </div>
-
-              <p class="note">Submitted to <code>POST /appointments</code>.</p>
-            </form>
-          </div>
-        </aside>
-      </div>
+      <!-- Appointments List -->
+      <section class="card">
+        <h2>All Appointments</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Patient</th>
+              <th>Doctor</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="appointmentTableBody">
+            <!-- Data loads here -->
+          </tbody>
+        </table>
+      </section>
     </div>
+
+    <script>
+      const API_BASE = "http://localhost:8080/api";
+      const tableBody = document.getElementById("appointmentTableBody");
+      const patientSelect = document.getElementById("patientId");
+      const doctorSelect = document.getElementById("doctorId");
+
+      // Load all appointments
+      async function loadAppointments() {
+        const res = await fetch(`${API_BASE}/appointments`);
+        const data = await res.json();
+        tableBody.innerHTML = "";
+        data.forEach((a) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+          <td>${a.appointmentId}</td>
+          <td>${a.patientName}</td>
+          <td>${a.doctorName}</td>
+          <td>${
+            a.appointmentDate ? a.appointmentDate.replace("T", " ") : ""
+          }</td>
+          <td>${a.status}</td>
+          <td>${a.notes || ""}</td>
+          <td>
+            <button class="btn btn--ok" onclick="updateStatus(${
+              a.appointmentId
+            }, 'Completed')">Complete</button>
+            <button class="btn btn--warn" onclick="updateStatus(${
+              a.appointmentId
+            }, 'Cancelled')">Cancel</button>
+            <button class="btn btn--danger" onclick="deleteAppointment(${
+              a.appointmentId
+            })">Delete</button>
+          </td>
+        `;
+          tableBody.appendChild(tr);
+        });
+      }
+
+      // Load doctor & patient dropdowns
+      async function loadDoctors() {
+        const res = await fetch(`${API_BASE}/doctors`);
+        const doctors = await res.json();
+        doctorSelect.innerHTML = '<option value="">Select Doctor</option>';
+        doctors.forEach((d) => {
+          const opt = document.createElement("option");
+          opt.value = d.id;
+          opt.textContent = d.doctorName;
+          doctorSelect.appendChild(opt);
+        });
+      }
+
+      async function loadPatients() {
+        const res = await fetch(`${API_BASE}/patients`);
+        const patients = await res.json();
+        patientSelect.innerHTML = '<option value="">Select Patient</option>';
+        patients.forEach((p) => {
+          const opt = document.createElement("option");
+          opt.value = p.patientId;
+          opt.textContent = p.name;
+          patientSelect.appendChild(opt);
+        });
+      }
+
+      // Book appointment
+      document
+        .getElementById("appointmentForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const body = {
+            patientId: parseInt(patientSelect.value),
+            doctorId: parseInt(doctorSelect.value),
+            appointmentDate: document.getElementById("appointmentDate").value,
+            notes: document.getElementById("notes").value,
+          };
+
+          const res = await fetch(`${API_BASE}/appointments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+
+          if (res.ok) {
+            alert("Appointment booked successfully!");
+            document.getElementById("appointmentForm").reset();
+            loadAppointments();
+          } else {
+            alert("Failed to book appointment.");
+          }
+        });
+
+      // Update status
+      async function updateStatus(id, status) {
+        const res = await fetch(`${API_BASE}/appointments/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+        });
+        if (res.ok) {
+          alert("Status updated!");
+          loadAppointments();
+        }
+      }
+
+      // Delete appointment
+      async function deleteAppointment(id) {
+        if (!confirm("Are you sure you want to delete this appointment?"))
+          return;
+        const res = await fetch(`${API_BASE}/appointments/${id}`, {
+          method: "DELETE",
+        });
+        if (res.ok) {
+          alert("Appointment deleted!");
+          loadAppointments();
+        }
+      }
+
+      // Initial load
+      window.onload = () => {
+        loadDoctors();
+        loadPatients();
+        loadAppointments();
+      };
+    </script>
   </body>
 </html>
