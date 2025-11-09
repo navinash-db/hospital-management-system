@@ -1,8 +1,9 @@
-package com.HMS.patient.controller;
+package com.HMS.controller;
 
-import com.HMS.patient.dto.PatientDTO;
-import com.HMS.patient.entity.Patient;
-import com.HMS.patient.service.PatientService;
+import com.HMS.dto.PatientDTO;
+import com.HMS.entity.Patient;
+import com.HMS.service.PatientService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;

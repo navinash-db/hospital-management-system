@@ -1,7 +1,8 @@
-package com.HMS.patient.repository;
-import com.HMS.patient.entity.Patient;
+package com.HMS.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.HMS.entity.Patient;
 
 import java.util.List;
 

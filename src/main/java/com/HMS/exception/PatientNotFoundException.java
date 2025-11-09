@@ -1,4 +1,4 @@
-package com.HMS.patient.exception;
+package com.HMS.exception;
 
 public class PatientNotFoundException extends RuntimeException {
     public PatientNotFoundException(String message) {

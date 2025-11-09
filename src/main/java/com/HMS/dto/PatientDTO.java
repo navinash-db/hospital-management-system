@@ -1,53 +1,47 @@
-package com.HMS.patient.entity;
+package com.HMS.dto;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 
-import java.time.LocalDateTime;
+public class PatientDTO {
 
-@Entity
-@Table(name = "patient")
-public class Patient {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long patientId;
 
-    @Column(nullable = false, length = 100)
+    @NotBlank(message = "Name is required")
     private String name;
 
-    @Column(nullable = false)
+    @NotNull(message = "Age is required")
+    @Min(value = 0, message = "Age cannot be negative")
     private Integer age;
 
-    @Column(length = 255)
     private String address;
 
+    @NotBlank(message = "Phone number is required")
     @Pattern(regexp = "^[6-9]\\d{9}$", message = "Invalid phone number! Must be 10 digits starting with 6-9")
-    @Column(name = "phone_number", nullable = false, unique = true, length = 15)
     private String phoneNumber;
 
+    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email is required")
+    private String email;
 
-    @Column(nullable = false, length = 10)
+    @NotBlank(message = "Gender is required")
     private String gender;
 
-    @Column(columnDefinition = "TEXT")
     private String notes;
 
-    @Column(nullable = false)
-    private String status = "Active"; // Active / Inactive
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Pattern(regexp = "Active|Inactive", message = "Status must be either 'Active' or 'Inactive'")
+    private String status;
 
     // ✅ Constructors
-    public Patient() {}
+    public PatientDTO() {}
 
-    public Patient(String name, Integer age, String address, String phoneNumber, 
-                   String gender, String notes, String status) {
+    public PatientDTO(Long patientId, String name, Integer age, String address,
+                      String phoneNumber, String email, String gender, String notes, String status) {
+        this.patientId = patientId;
         this.name = name;
         this.age = age;
         this.address = address;
         this.phoneNumber = phoneNumber;
+        this.email = email;
         this.gender = gender;
         this.notes = notes;
         this.status = status;
@@ -94,6 +88,14 @@ public class Patient {
         this.phoneNumber = phoneNumber;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public String getGender() {
         return gender;
     }
@@ -116,13 +118,5 @@ public class Patient {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 }
