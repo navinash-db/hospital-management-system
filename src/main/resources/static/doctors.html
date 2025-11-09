@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link rel="stylesheet" href="styles.css" />
   </head>
+
   <body class="doctors">
     <div class="container">
       <header class="header">
@@ -47,6 +48,8 @@
                 <tr>
                   <th>Name</th>
                   <th>Specialization</th>
+                  <th>Qualification</th>
+                  <th>Experience</th>
                   <th>Phone</th>
                   <th>Email</th>
                   <th>Status</th>
@@ -58,7 +61,6 @@
               </tbody>
             </table>
           </div>
-
           <p class="muted">Loaded from GET <code>/api/doctors</code>.</p>
         </div>
       </section>
@@ -75,25 +77,57 @@
             <input id="editingId" type="hidden" />
 
             <label class="label"
-              >Full name
-              <input id="fullName" class="input" />
-            </label>
-
-            <label class="label"
-              >Specialization
-              <select id="specialization" class="select" required>
-                <option value="">Select specialization</option>
-                <option value="General Medicine">General Medicine</option>
-                <option value="Cardiology">Cardiology</option>
-                <option value="Neurology">Neurology</option>
-                <option value="Orthopedics">Orthopedics</option>
-              </select>
+              >Full Name
+              <input id="doctorName" class="input" required />
             </label>
 
             <div class="two-col">
               <label class="label"
+                >Specialization
+                <select id="specialization" class="select" required>
+                  <option value="">Select specialization</option>
+                  <option value="General Medicine">General Medicine</option>
+                  <option value="Cardiology">Cardiology</option>
+                  <option value="Neurology">Neurology</option>
+                  <option value="Orthopedics">Orthopedics</option>
+                </select>
+              </label>
+
+              <label class="label"
+                >Qualification
+                <input
+                  id="qualification"
+                  class="input"
+                  placeholder="MBBS, MD, etc."
+                />
+              </label>
+            </div>
+
+            <div class="two-col">
+              <label class="label"
+                >Gender
+                <select id="gender" class="select">
+                  <option value="">Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>
+
+              <label class="label"
+                >Experience
+                <input
+                  id="experience"
+                  class="input"
+                  placeholder="e.g. 5 years"
+                />
+              </label>
+            </div>
+
+            <div class="two-col">
+              <label class="label"
                 >Phone
-                <input id="phone" class="input" />
+                <input id="phoneNumber" class="input" placeholder="+91..." />
               </label>
               <label class="label"
                 >Email
@@ -101,15 +135,22 @@
               </label>
             </div>
 
-            <div class="two-col">
-              <label class="label"
-                >Status
-                <select id="status" class="select">
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
-              </label>
-            </div>
+            <label class="label"
+              >Address
+              <textarea
+                id="address"
+                class="textarea"
+                placeholder="Clinic or hospital address"
+              ></textarea>
+            </label>
+
+            <label class="label"
+              >Status
+              <select id="status" class="select">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </label>
 
             <div
               style="
@@ -138,13 +179,19 @@
 
       const tbody = document.getElementById("doctorsTbody");
       const form = document.getElementById("doctorForm");
+
       const editingId = document.getElementById("editingId");
-      const fullName = document.getElementById("fullName");
+      const doctorName = document.getElementById("doctorName");
       const specialization = document.getElementById("specialization");
-      const phone = document.getElementById("phone");
+      const qualification = document.getElementById("qualification");
+      const gender = document.getElementById("gender");
+      const experience = document.getElementById("experience");
+      const phoneNumber = document.getElementById("phoneNumber");
       const email = document.getElementById("email");
+      const address = document.getElementById("address");
       const status = document.getElementById("status");
       const clearBtn = document.getElementById("clearBtn");
+
       const searchBtn = document.getElementById("btnSearch");
       const searchInput = document.getElementById("searchInput");
       const filterStatus = document.getElementById("filterStatus");
@@ -158,7 +205,7 @@
         } catch (err) {
           console.error(err);
           tbody.innerHTML =
-            '<tr><td colspan="6" class="muted">Could not load doctors.</td></tr>';
+            '<tr><td colspan="8" class="muted">Could not load doctors.</td></tr>';
         }
       }
 
@@ -166,16 +213,17 @@
         tbody.innerHTML = "";
         if (!Array.isArray(list) || list.length === 0) {
           tbody.innerHTML =
-            '<tr><td colspan="6" class="muted">No doctors found.</td></tr>';
+            '<tr><td colspan="8" class="muted">No doctors found.</td></tr>';
           return;
         }
 
         list.forEach((d) => {
           const tr = document.createElement("tr");
-
           tr.innerHTML = `
-            <td>${d.name || ""}</td>
+            <td>${d.doctorName || ""}</td>
             <td>${d.specialization || ""}</td>
+            <td>${d.qualification || ""}</td>
+            <td>${d.experience || ""}</td>
             <td>${d.phoneNumber || ""}</td>
             <td>${d.email || ""}</td>
             <td><span class="pill ${
@@ -186,31 +234,30 @@
                 d
               )})'>Edit</button>
               <button class="btn btn-delete" onclick="deleteDoctor(${
-                d.doctorId
+                d.id
               })">Delete</button>
             </td>
           `;
-
           tbody.appendChild(tr);
         });
       }
 
       function clearForm() {
+        form.reset();
         editingId.value = "";
-        fullName.value = "";
-        specialization.value = "";
-        phone.value = "";
-        email.value = "";
-        status.value = "Active";
       }
       clearBtn.addEventListener("click", clearForm);
 
       function editDoctor(d) {
-        editingId.value = d.doctorId || "";
-        fullName.value = d.name || "";
+        editingId.value = d.id || "";
+        doctorName.value = d.doctorName || "";
         specialization.value = d.specialization || "";
-        phone.value = d.phoneNumber || "";
+        qualification.value = d.qualification || "";
+        gender.value = d.gender || "";
+        experience.value = d.experience || "";
+        phoneNumber.value = d.phoneNumber || "";
         email.value = d.email || "";
+        address.value = d.address || "";
         status.value = d.status || "Active";
         window.scrollTo({ top: form.offsetTop - 20, behavior: "smooth" });
       }
@@ -234,17 +281,24 @@
 
       async function submitForm() {
         const id = editingId.value || null;
+
         const payload = {
-          name: fullName.value.trim(),
+          id: id ? Number(id) : null, // ✅ ensures correct update
+          doctorName: doctorName.value.trim(),
           specialization: specialization.value.trim(),
-          phoneNumber: phone.value.trim(),
+          qualification: qualification.value.trim(),
+          gender: gender.value,
+          experience: experience.value.trim(),
+          phoneNumber: phoneNumber.value.trim(),
           email: email.value.trim(),
-          status: status.value,
+          address: address.value.trim(),
+          status: status.value, // ✅ status always included
         };
 
         try {
           const method = id ? "PUT" : "POST";
           const url = id ? `${API_BASE}/${id}` : API_BASE;
+
           const res = await fetch(url, {
             method,
             headers: { "Content-Type": "application/json" },
@@ -281,7 +335,7 @@
           if (q)
             filtered = filtered.filter(
               (d) =>
-                (d.name || "").toLowerCase().includes(q) ||
+                (d.doctorName || "").toLowerCase().includes(q) ||
                 (d.specialization || "").toLowerCase().includes(q)
             );
 
