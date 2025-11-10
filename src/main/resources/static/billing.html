@@ -1,109 +1,116 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="billing">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Billing Management — Hospital Management</title>
+    <title>Billing Management – Hospital Management</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
+
   <body class="billing">
     <div class="container">
+      <!-- Header -->
       <header class="header">
         <h1 class="title">Billing Management</h1>
-        <a class="btn" href="index.html">Home</a>
+        <a class="home-btn" href="index.html">Home</a>
       </header>
 
       <div class="grid">
-        <!-- Billing Table -->
+        <!-- Billing Records Table -->
         <section class="card">
           <div class="card__header">
-            <h2 class="card__title">Bills</h2>
-            <form class="search">
-              <button class="btn" type="button" onclick="loadBills()">
-                Refresh
-              </button>
-            </form>
+            <h2 class="card__title">Billing Records</h2>
+            <button id="refreshBtn" class="btn btn--ok">Refresh</button>
           </div>
 
           <div class="card__body table-wrap">
-            <table>
+            <table id="billingTable" aria-label="Billing Table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Patient ID</th>
-                  <th>Appointment ID</th>
+                  <th>Bill ID</th>
+                  <th>Patient</th>
+                  <th>Phone</th>
+                  <th>Consultation</th>
+                  <th>Medicine</th>
+                  <th>Lab</th>
                   <th>Total</th>
                   <th>Status</th>
                   <th>Date</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
-              <tbody id="billingTbody"></tbody>
+              <tbody id="billingTbody">
+                <!-- dynamically filled -->
+              </tbody>
             </table>
           </div>
         </section>
 
-        <!-- Billing Form -->
+        <!-- Create Bill Form -->
         <aside class="card">
           <div class="card__header">
             <h2 class="card__title">Create Bill</h2>
           </div>
+
           <div class="card__body">
             <form id="billingForm" class="grid">
-              <label class="label"
-                >Patient ID
-                <input id="patientId" class="input" type="number" required />
-              </label>
+              <!-- Patient -->
+              <div>
+                <label class="label" for="patientSelect">Patient</label>
+                <select id="patientSelect" class="select" required>
+                  <option value="">Select patient</option>
+                </select>
+              </div>
 
-              <label class="label"
-                >Appointment ID
-                <input id="appointmentId" class="input" type="number" />
-              </label>
+              <!-- Appointment ID -->
+              <div>
+                <label class="label" for="appointmentId">Appointment ID</label>
+                <input
+                  id="appointmentId"
+                  type="number"
+                  class="input"
+                  placeholder="Optional"
+                />
+              </div>
 
+              <!-- Charges -->
               <div class="two-col">
-                <label class="label"
-                  >Consultation Fee
-                  <input
-                    id="consultationFee"
-                    class="input"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                  />
+                <label class="label">
+                  Consultation Fee
+                  <input id="consultationFee" type="number" class="input" />
                 </label>
-                <label class="label"
-                  >Medicine Charges
-                  <input
-                    id="medicineCharges"
-                    class="input"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                  />
+                <label class="label">
+                  Medicine Charges
+                  <input id="medicineCharges" type="number" class="input" />
                 </label>
               </div>
 
-              <label class="label"
-                >Lab Charges
-                <input
-                  id="labCharges"
-                  class="input"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                />
+              <label class="label">
+                Lab Charges
+                <input id="labCharges" type="number" class="input" />
               </label>
 
-              <label class="label"
-                >Payment Status
+              <!-- Payment -->
+              <label class="label">
+                Payment Status
                 <select id="paymentStatus" class="select">
-                  <option value="Pending">Pending</option>
                   <option value="Paid">Paid</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Cancelled">Cancelled</option>
                 </select>
               </label>
 
-              <div style="display: flex; justify-content: flex-end; gap: 10px">
-                <button type="reset" class="btn">Clear</button>
-                <button type="submit" class="btn btn--ok">Save</button>
+              <!-- Buttons -->
+              <div
+                style="
+                  display: flex;
+                  gap: 10px;
+                  flex-wrap: wrap;
+                  justify-content: flex-end;
+                "
+              >
+                <button class="btn" type="reset">Clear</button>
+                <button class="btn btn--ok" type="submit">Create Bill</button>
               </div>
             </form>
           </div>
@@ -112,82 +119,133 @@
     </div>
 
     <script>
-      const API_BASE = "/api/billings";
-      const tbody = document.getElementById("billingTbody");
-      const form = document.getElementById("billingForm");
+      const API_BASE_BILLING = "/api/billings";
+      const API_BASE_PATIENTS = "/api/patients";
 
-      async function loadBills() {
+      const patientSelect = document.getElementById("patientSelect");
+      const billingTbody = document.getElementById("billingTbody");
+      const refreshBtn = document.getElementById("refreshBtn");
+      const billingForm = document.getElementById("billingForm");
+
+      // 🧾 Load all patients for dropdown
+      async function loadPatients() {
         try {
-          const res = await fetch(API_BASE);
-          const data = await res.json();
-          renderBills(data);
+          const res = await fetch(API_BASE_PATIENTS);
+          if (!res.ok) throw new Error("Failed to load patients");
+          const patients = await res.json();
+
+          patientSelect.innerHTML = '<option value="">Select patient</option>';
+          patients.forEach((p) => {
+            const option = document.createElement("option");
+            option.value = `${p.name}|${p.phoneNumber}`; // store both
+            option.textContent = `${p.name} (${p.phoneNumber})`;
+            patientSelect.appendChild(option);
+          });
         } catch (err) {
-          console.error(err);
-          tbody.innerHTML = `<tr><td colspan="6">Failed to load bills</td></tr>`;
+          console.error("Error loading patients:", err);
         }
       }
 
-      function renderBills(bills) {
-        tbody.innerHTML = "";
-        if (!bills.length) {
-          tbody.innerHTML = `<tr><td colspan="6">No bills found</td></tr>`;
-          return;
+      // 💳 Load all billing records
+      async function loadBillingRecords() {
+        try {
+          const res = await fetch(API_BASE_BILLING);
+          if (!res.ok) throw new Error("Failed to load bills");
+          const list = await res.json();
+
+          billingTbody.innerHTML = "";
+          if (!Array.isArray(list) || list.length === 0) {
+            billingTbody.innerHTML =
+              '<tr><td colspan="10" class="muted">No billing records found.</td></tr>';
+            return;
+          }
+
+          list.forEach((b) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${b.billId}</td>
+              <td>${b.patientName || "—"}</td>
+              <td>${b.patientPhone || "—"}</td>
+              <td>${b.consultationFee || 0}</td>
+              <td>${b.medicineCharges || 0}</td>
+              <td>${b.labCharges || 0}</td>
+              <td>${b.totalAmount || 0}</td>
+              <td><span class="pill ${
+                b.paymentStatus === "Paid" ? "pill--ok" : "pill--warn"
+              }">${b.paymentStatus}</span></td>
+              <td>${b.billingDate?.split("T")[0]}</td>
+              <td class="actions">
+                <button class="btn btn-delete" onclick="deleteBill(${
+                  b.billId
+                })">Delete</button>
+              </td>
+            `;
+            billingTbody.appendChild(tr);
+          });
+        } catch (err) {
+          console.error("Error loading bills:", err);
         }
-        bills.forEach((b) => {
-          const row = `<tr>
-            <td>${b.billId}</td>
-            <td>${b.patientId}</td>
-            <td>${b.appointmentId ?? "—"}</td>
-            <td>₹${b.totalAmount?.toFixed(2) ?? "0.00"}</td>
-            <td>${b.paymentStatus}</td>
-            <td>${b.billingDate?.replace("T", " ") ?? "—"}</td>
-          </tr>`;
-          tbody.insertAdjacentHTML("beforeend", row);
-        });
       }
 
-      form.addEventListener("submit", async (e) => {
+      // 🧾 Submit billing form
+      billingForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const patientId = Number(document.getElementById("patientId").value);
-        const appointmentId = Number(
-          document.getElementById("appointmentId").value
-        );
-        const consultationFee =
-          Number(document.getElementById("consultationFee").value) || 0;
-        const medicineCharges =
-          Number(document.getElementById("medicineCharges").value) || 0;
-        const labCharges =
-          Number(document.getElementById("labCharges").value) || 0;
-        const paymentStatus = document.getElementById("paymentStatus").value;
-
-        const totalAmount = consultationFee + medicineCharges + labCharges;
+        const [patientName, patientPhone] = patientSelect.value.split("|");
 
         const payload = {
-          patientId,
-          appointmentId,
-          consultationFee,
-          medicineCharges,
-          labCharges,
-          totalAmount,
-          paymentStatus,
+          patientName,
+          patientPhone,
+          appointmentId: document.getElementById("appointmentId").value || null,
+          consultationFee:
+            parseFloat(document.getElementById("consultationFee").value) || 0,
+          medicineCharges:
+            parseFloat(document.getElementById("medicineCharges").value) || 0,
+          labCharges:
+            parseFloat(document.getElementById("labCharges").value) || 0,
+          paymentStatus: document.getElementById("paymentStatus").value,
         };
 
         try {
-          const res = await fetch(API_BASE, {
+          const res = await fetch(API_BASE_BILLING, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
           });
-          if (!res.ok) throw new Error("Save failed");
-          await loadBills();
-          form.reset();
+
+          if (!res.ok) {
+            const text = await res.text();
+            alert("Failed to create bill: " + text);
+            return;
+          }
+
+          billingForm.reset();
+          await loadBillingRecords();
         } catch (err) {
-          console.error(err);
-          alert("Error saving bill");
+          console.error("Create bill error:", err);
+          alert("Error creating bill");
         }
       });
 
-      loadBills();
+      // ❌ Delete bill
+      async function deleteBill(id) {
+        if (!confirm("Are you sure you want to delete this bill?")) return;
+        try {
+          const res = await fetch(`${API_BASE_BILLING}/${id}`, {
+            method: "DELETE",
+          });
+          if (!res.ok) throw new Error("Failed to delete bill");
+          await loadBillingRecords();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      // 🔄 Refresh
+      refreshBtn.addEventListener("click", loadBillingRecords);
+
+      // 🚀 On page load
+      loadPatients();
+      loadBillingRecords();
     </script>
   </body>
 </html>
