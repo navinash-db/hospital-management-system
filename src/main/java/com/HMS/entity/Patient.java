@@ -25,7 +25,7 @@ public class Patient {
 
     // ✅ Not unique, but still must be a valid 10-digit number (and not null)
     @Pattern(regexp = "^[6-9]\\d{9}$", message = "Invalid phone number! Must be 10 digits starting with 6-9")
-    @Column(name = "phone_number", nullable = false, length = 15)
+    @Column(name = "phone_number", nullable = false,unique = true, length = 15)
     private String phoneNumber;
 
     @Email(message = "Invalid email format!")
