@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Billing Management — Hospital Management</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="billing">
+    <div class="container">
+      <header class="header">
+        <h1 class="title">Billing Management</h1>
+        <a class="btn" href="index.html">Home</a>
+      </header>
+
+      <div class="grid">
+        <!-- Billing Table -->
+        <section class="card">
+          <div class="card__header">
+            <h2 class="card__title">Bills</h2>
+            <form class="search">
+              <button class="btn" type="button" onclick="loadBills()">
+                Refresh
+              </button>
+            </form>
+          </div>
+
+          <div class="card__body table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Patient ID</th>
+                  <th>Appointment ID</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="billingTbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Billing Form -->
+        <aside class="card">
+          <div class="card__header">
+            <h2 class="card__title">Create Bill</h2>
+          </div>
+          <div class="card__body">
+            <form id="billingForm" class="grid">
+              <label class="label"
+                >Patient ID
+                <input id="patientId" class="input" type="number" required />
+              </label>
+
+              <label class="label"
+                >Appointment ID
+                <input id="appointmentId" class="input" type="number" />
+              </label>
+
+              <div class="two-col">
+                <label class="label"
+                  >Consultation Fee
+                  <input
+                    id="consultationFee"
+                    class="input"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                  />
+                </label>
+                <label class="label"
+                  >Medicine Charges
+                  <input
+                    id="medicineCharges"
+                    class="input"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                  />
+                </label>
+              </div>
+
+              <label class="label"
+                >Lab Charges
+                <input
+                  id="labCharges"
+                  class="input"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                />
+              </label>
+
+              <label class="label"
+                >Payment Status
+                <select id="paymentStatus" class="select">
+                  <option value="Pending">Pending</option>
+                  <option value="Paid">Paid</option>
+                </select>
+              </label>
+
+              <div style="display: flex; justify-content: flex-end; gap: 10px">
+                <button type="reset" class="btn">Clear</button>
+                <button type="submit" class="btn btn--ok">Save</button>
+              </div>
+            </form>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = "/api/billings";
+      const tbody = document.getElementById("billingTbody");
+      const form = document.getElementById("billingForm");
+
+      async function loadBills() {
+        try {
+          const res = await fetch(API_BASE);
+          const data = await res.json();
+          renderBills(data);
+        } catch (err) {
+          console.error(err);
+          tbody.innerHTML = `<tr><td colspan="6">Failed to load bills</td></tr>`;
+        }
+      }
+
+      function renderBills(bills) {
+        tbody.innerHTML = "";
+        if (!bills.length) {
+          tbody.innerHTML = `<tr><td colspan="6">No bills found</td></tr>`;
+          return;
+        }
+        bills.forEach((b) => {
+          const row = `<tr>
+            <td>${b.billId}</td>
+            <td>${b.patientId}</td>
+            <td>${b.appointmentId ?? "—"}</td>
+            <td>₹${b.totalAmount?.toFixed(2) ?? "0.00"}</td>
+            <td>${b.paymentStatus}</td>
+            <td>${b.billingDate?.replace("T", " ") ?? "—"}</td>
+          </tr>`;
+          tbody.insertAdjacentHTML("beforeend", row);
+        });
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const patientId = Number(document.getElementById("patientId").value);
+        const appointmentId = Number(
+          document.getElementById("appointmentId").value
+        );
+        const consultationFee =
+          Number(document.getElementById("consultationFee").value) || 0;
+        const medicineCharges =
+          Number(document.getElementById("medicineCharges").value) || 0;
+        const labCharges =
+          Number(document.getElementById("labCharges").value) || 0;
+        const paymentStatus = document.getElementById("paymentStatus").value;
+
+        const totalAmount = consultationFee + medicineCharges + labCharges;
+
+        const payload = {
+          patientId,
+          appointmentId,
+          consultationFee,
+          medicineCharges,
+          labCharges,
+          totalAmount,
+          paymentStatus,
+        };
+
+        try {
+          const res = await fetch(API_BASE, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!res.ok) throw new Error("Save failed");
+          await loadBills();
+          form.reset();
+        } catch (err) {
+          console.error(err);
+          alert("Error saving bill");
+        }
+      });
+
+      loadBills();
+    </script>
+  </body>
+</html>
