@@ -1,7 +1,6 @@
 package com.HMS.entity;
 
-import com.HMS.entity.Doctor;
-import com.HMS.entity.Patient;
+
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
