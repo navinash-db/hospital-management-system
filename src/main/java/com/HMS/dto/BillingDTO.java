@@ -5,12 +5,16 @@ import java.time.LocalDateTime;
 public class BillingDTO {
 
     private Long billId;
-    private Long patientId;
     private Long appointmentId;
+
+    private String patientName;       // ✅ added
+    private String patientPhone;      // ✅ added
+
     private Double consultationFee;
     private Double medicineCharges;
     private Double labCharges;
     private Double totalAmount;
+
     private String paymentStatus;
     private LocalDateTime billingDate;
 
@@ -18,11 +22,14 @@ public class BillingDTO {
     public Long getBillId() { return billId; }
     public void setBillId(Long billId) { this.billId = billId; }
 
-    public Long getPatientId() { return patientId; }
-    public void setPatientId(Long patientId) { this.patientId = patientId; }
-
     public Long getAppointmentId() { return appointmentId; }
     public void setAppointmentId(Long appointmentId) { this.appointmentId = appointmentId; }
+
+    public String getPatientName() { return patientName; }
+    public void setPatientName(String patientName) { this.patientName = patientName; }
+
+    public String getPatientPhone() { return patientPhone; }
+    public void setPatientPhone(String patientPhone) { this.patientPhone = patientPhone; }
 
     public Double getConsultationFee() { return consultationFee; }
     public void setConsultationFee(Double consultationFee) { this.consultationFee = consultationFee; }
