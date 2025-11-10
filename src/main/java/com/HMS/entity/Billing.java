@@ -11,16 +11,25 @@ public class Billing {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long billId;
 
+    // 🧍 Patient details (no need to enter ID manually)
     private Long patientId;
+    private String patientName;
+    private String patientPhone;
+
+    // 📅 Optional link to appointment
     private Long appointmentId;
 
+    // 💰 Charges
     private Double consultationFee;
     private Double medicineCharges;
     private Double labCharges;
     private Double totalAmount;
 
-    private String paymentStatus; // e.g., Paid / Pending
+    // 💳 Payment
+    private String paymentStatus; // e.g., Paid / Pending / Cancelled
     private LocalDateTime billingDate = LocalDateTime.now();
+
+    // ---------- Getters & Setters ----------
 
     public Long getBillId() {
         return billId;
@@ -36,6 +45,22 @@ public class Billing {
 
     public void setPatientId(Long patientId) {
         this.patientId = patientId;
+    }
+
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
+
+    public String getPatientPhone() {
+        return patientPhone;
+    }
+
+    public void setPatientPhone(String patientPhone) {
+        this.patientPhone = patientPhone;
     }
 
     public Long getAppointmentId() {
