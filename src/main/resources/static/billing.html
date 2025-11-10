@@ -40,16 +40,6 @@
 
           <div class="card__body table-wrap">
             <table aria-label="Billing table">
-              <colgroup>
-                <col class="pt-name" />
-                <col class="pt-phone" />
-                <col class="pt-age" />
-                <col class="pt-gender" />
-                <col class="pt-email" />
-                <col class="pt-status" />
-                <col class="pt-actions" />
-              </colgroup>
-
               <thead>
                 <tr>
                   <th>Patient Name</th>
@@ -81,26 +71,22 @@
 
           <div class="card__body">
             <form class="grid" id="billingForm">
-              <!-- Patient Info -->
-              <div class="two-col">
-                <div>
-                  <label class="label">Patient Name</label>
-                  <input
-                    id="patientName"
-                    class="input"
-                    placeholder="Enter patient name"
-                    required
-                  />
-                </div>
-                <div>
-                  <label class="label">Phone Number</label>
-                  <input
-                    id="patientPhone"
-                    class="input"
-                    placeholder="Enter phone number"
-                    required
-                  />
-                </div>
+              <!-- Patient Selection -->
+              <div>
+                <label class="label" for="patientSelect">Select Patient</label>
+                <select id="patientSelect" class="select" required>
+                  <option value="">Select patient</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="label">Phone Number</label>
+                <input
+                  id="patientPhone"
+                  class="input"
+                  placeholder="Auto-filled"
+                  readonly
+                />
               </div>
 
               <!-- Charges -->
@@ -169,14 +155,52 @@
     </div>
 
     <script>
-      const API_BASE = "/api/billings";
+      const BILL_API = "/api/billings";
+      const PATIENT_API = "/api/patients";
+
       const tbody = document.getElementById("billingTbody");
       const form = document.getElementById("billingForm");
+      const patientSelect = document.getElementById("patientSelect");
+      const phoneInput = document.getElementById("patientPhone");
 
+      let patients = [];
+
+      /* ========== Load Patients for Dropdown ========== */
+      async function loadPatients() {
+        try {
+          const res = await fetch(PATIENT_API);
+          if (!res.ok) throw new Error("Failed to load patients");
+          const data = await res.json();
+          patients = data;
+
+          patientSelect.innerHTML =
+            '<option value="">Select patient</option>' +
+            data
+              .map(
+                (p) =>
+                  `<option value="${p.name}" data-phone="${p.phoneNumber}">
+                    ${p.name} (${p.phoneNumber})
+                  </option>`
+              )
+              .join("");
+        } catch (err) {
+          console.error("Error loading patients:", err);
+          patientSelect.innerHTML =
+            '<option value="">Error loading patients</option>';
+        }
+      }
+
+      /* ========== Auto-fill phone on select ========== */
+      patientSelect.addEventListener("change", (e) => {
+        const selected = patientSelect.options[patientSelect.selectedIndex];
+        phoneInput.value = selected.dataset.phone || "";
+      });
+
+      /* ========== Load Billing Records ========== */
       async function loadBillings() {
         try {
-          const res = await fetch(API_BASE);
-          if (!res.ok) throw new Error("Failed to fetch");
+          const res = await fetch(BILL_API);
+          if (!res.ok) throw new Error("Failed to fetch bills");
           const list = await res.json();
           renderTable(list);
         } catch (err) {
@@ -186,6 +210,7 @@
         }
       }
 
+      /* ========== Render Billing Table ========== */
       function renderTable(list) {
         tbody.innerHTML = "";
         if (!list || list.length === 0) {
@@ -199,9 +224,11 @@
           tr.innerHTML = `
             <td>${b.patientName || "-"}</td>
             <td>${b.patientPhone || "-"}</td>
-            <td>${b.totalAmount || 0}</td>
-            <td>${b.consultationFee || 0}</td>
-            <td>${(b.labCharges || 0) + (b.medicineCharges || 0)}</td>
+            <td>${b.totalAmount?.toFixed(2) || "0.00"}</td>
+            <td>${b.consultationFee?.toFixed(2) || "0.00"}</td>
+            <td>${((b.labCharges || 0) + (b.medicineCharges || 0)).toFixed(
+              2
+            )}</td>
             <td>
               <span class="pill ${
                 b.paymentStatus === "Paid"
@@ -221,10 +248,11 @@
         });
       }
 
+      /* ========== Delete Billing Record ========== */
       async function deleteBill(id) {
         if (!confirm("Delete this billing record?")) return;
         try {
-          const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+          const res = await fetch(`${BILL_API}/${id}`, { method: "DELETE" });
           if (!res.ok) throw new Error("Delete failed");
           loadBillings();
         } catch (err) {
@@ -232,11 +260,21 @@
         }
       }
 
+      /* ========== Save Billing Record ========== */
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
+
+        const name = patientSelect.value.trim();
+        const phone = phoneInput.value.trim();
+
+        if (!name || !phone) {
+          alert("Please select a patient.");
+          return;
+        }
+
         const dto = {
-          patientName: document.getElementById("patientName").value.trim(),
-          patientPhone: document.getElementById("patientPhone").value.trim(),
+          patientName: name,
+          patientPhone: phone,
           consultationFee:
             parseFloat(document.getElementById("consultationFee").value) || 0,
           medicineCharges:
@@ -247,7 +285,7 @@
         };
 
         try {
-          const res = await fetch(API_BASE, {
+          const res = await fetch(BILL_API, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dto),
@@ -265,6 +303,7 @@
         }
       });
 
+      /* ========== Search and Filter ========== */
       document.getElementById("searchForm").addEventListener("submit", (e) => {
         e.preventDefault();
         doFilter();
@@ -275,22 +314,27 @@
           .getElementById("searchInput")
           .value.trim()
           .toLowerCase();
-        const status = document.getElementById("filterPayment").value.trim();
-        const res = await fetch(API_BASE);
+        const status = document
+          .getElementById("filterPayment")
+          .value.trim()
+          .toLowerCase();
+        const res = await fetch(BILL_API);
         const list = await res.json();
 
         const filtered = list.filter((b) => {
           const matchName =
-            b.patientName?.toLowerCase().includes(q) ||
-            b.patientPhone?.includes(q);
+            (b.patientName || "").toLowerCase().includes(q) ||
+            (b.patientPhone || "").includes(q);
           const matchStatus = status
-            ? (b.paymentStatus || "").toLowerCase() === status.toLowerCase()
+            ? (b.paymentStatus || "").toLowerCase() === status
             : true;
           return matchName && matchStatus;
         });
         renderTable(filtered);
       }
 
+      /* ========== Boot ========== */
+      loadPatients();
       loadBillings();
     </script>
   </body>
