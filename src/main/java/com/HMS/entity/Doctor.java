@@ -3,6 +3,8 @@ package com.HMS.entity;
 import jakarta.persistence.*;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Entity
 @Table(name = "doctor")
 public class Doctor {
@@ -23,6 +25,7 @@ public class Doctor {
 
     // ✅ One doctor can have many appointments
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "doctor-appointment")
     private List<Appointment> appointments;
 
     // Getters and Setters

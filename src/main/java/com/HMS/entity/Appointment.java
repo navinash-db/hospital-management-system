@@ -4,6 +4,8 @@ package com.HMS.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 @Table(name = "appointments")
 public class Appointment {
@@ -14,10 +16,14 @@ public class Appointment {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "patient_id", nullable = false)
+	@JsonBackReference(value = "patient-appointment")
+	
 	private Patient patient;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JsonBackReference(value = "doctor-appointment")
 	@JoinColumn(name = "doctor_id", nullable = false)
+	
 	private Doctor doctor;
 
 	@Column(nullable = false)

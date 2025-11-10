@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import java.time.LocalDateTime;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Entity
 @Table(name = "patient")
 public class Patient {
@@ -45,6 +45,7 @@ public class Patient {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "patient-appointment")
     private List<Appointment> appointments;
 
     // ✅ Constructors
