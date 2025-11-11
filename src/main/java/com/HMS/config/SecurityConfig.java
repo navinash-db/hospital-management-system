@@ -31,23 +31,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // ✅ Open endpoints
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers(
-                                "/login.html",
-                                "/doctors.html",
-                                "/patients.html",
-                                "/appointments.html",
-                                "/billing.html",
-                                "/styles.css",
-                                "/js/**",
-                                "/images/**",
-                                "/favicon.ico")
-                        .permitAll()
-                        // ✅ Role-based protection
-                        .requestMatchers("/api/doctors/**").hasRole("ADMIN")
-                        .requestMatchers("/api/patients/**", "/api/appointments/**", "/api/billing/**")
-                        .hasRole("RECEPTIONIST")
-                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

@@ -167,9 +167,25 @@
     </div>
 
     <script>
-      /* ---------- Client JS: full, final ---------- */
+      /* ---------- Client JS: secure, sends JWT ---------- */
 
       const API_BASE = "/api/patients";
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role");
+
+      // Redirect if not logged in
+      if (!token) {
+        alert("Unauthorized! Please log in.");
+        window.location.href = "login.html";
+      }
+
+      // Allow ADMIN and RECEPTIONIST to access patients page
+      if (!(role === "ADMIN" || role === "RECEPTIONIST")) {
+        alert(
+          "Access denied! Only Admin/Receptionist can access Patient Management."
+        );
+        window.location.href = "login.html";
+      }
 
       /* DOM refs */
       const tbody = document.getElementById("patientsTbody");
@@ -193,10 +209,16 @@
       const modalName = document.getElementById("modalName");
       const modalNotes = document.getElementById("modalNotes");
 
-      /* helper: fetch single patient */
+      const authHeaders = () => ({
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      });
+
       async function fetchPatientById(id) {
         try {
-          const res = await fetch(`${API_BASE}/${id}`);
+          const res = await fetch(`${API_BASE}/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
           if (!res.ok) return null;
           return await res.json();
         } catch (e) {
@@ -205,7 +227,6 @@
         }
       }
 
-      /* compute age from YYYY-MM-DD */
       function computeAgeFromDob(dobVal) {
         if (!dobVal) return null;
         const birth = new Date(dobVal);
@@ -217,10 +238,11 @@
         return age;
       }
 
-      /* load patients */
       async function bootLoad() {
         try {
-          const res = await fetch(API_BASE);
+          const res = await fetch(API_BASE, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
           if (!res.ok) throw new Error("Failed to load");
           const list = await res.json();
           renderList(list);
@@ -231,7 +253,6 @@
         }
       }
 
-      /* render table rows; keep fixed column order */
       function renderList(list) {
         tbody.innerHTML = "";
         if (!Array.isArray(list) || list.length === 0) {
@@ -272,17 +293,14 @@
 
           const tdActions = document.createElement("td");
           tdActions.className = "actions";
-          // View
           const btnView = document.createElement("button");
           btnView.className = "btn btn-view";
           btnView.textContent = "View";
           btnView.onclick = () => openView(p);
-          // Edit
           const btnEdit = document.createElement("button");
           btnEdit.className = "btn btn-edit";
           btnEdit.textContent = "Edit";
           btnEdit.onclick = () => populateForm(p);
-          // Delete
           const btnDelete = document.createElement("button");
           btnDelete.className = "btn btn-delete";
           btnDelete.textContent = "Delete";
@@ -295,7 +313,6 @@
         });
       }
 
-      /* view modal */
       function openView(p) {
         modalName.textContent = p.name ? p.name + " — Notes" : "Notes";
         modalNotes.textContent = p.notes || "(no notes)";
@@ -307,11 +324,9 @@
         viewModal.setAttribute("aria-hidden", "true");
       });
 
-      /* populate edit form */
       function populateForm(p) {
         editingId.value = p.patientId || "";
         fullName.value = p.name || "";
-        // optional: approximate dob if only age exists
         if (!p.dob && p.age) {
           const year = new Date().getFullYear() - Number(p.age);
           dob.value = `${year}-01-01`;
@@ -329,7 +344,6 @@
         });
       }
 
-      /* clear form */
       clearBtn.addEventListener("click", (e) => {
         e.preventDefault();
         clearForm();
@@ -345,7 +359,6 @@
         notes.value = "";
       }
 
-      /* submit: compute age, include status to avoid DB null constraint */
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         await submitForm();
@@ -372,7 +385,6 @@
           notes: notesVal,
         };
 
-        // include status so DB non-null constraint doesn't fail
         if (id) {
           const existing = await fetchPatientById(id);
           payload.status =
@@ -381,7 +393,6 @@
           payload.status = "Active";
         }
 
-        // remove empty values (optional)
         Object.keys(payload).forEach((k) => {
           if (payload[k] === null || payload[k] === "") delete payload[k];
         });
@@ -391,7 +402,7 @@
           const url = id ? `${API_BASE}/${id}` : API_BASE;
           const res = await fetch(url, {
             method,
-            headers: { "Content-Type": "application/json" },
+            headers: authHeaders(),
             body: JSON.stringify(payload),
           });
 
@@ -423,11 +434,13 @@
         }
       }
 
-      /* delete */
       async function confirmDelete(id) {
         if (!confirm("Delete this patient?")) return;
         try {
-          const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+          const res = await fetch(`${API_BASE}/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
           if (!res.ok) {
             const body = await res.json().catch(() => ({}));
             alert("Delete failed: " + (body.error || res.status));
@@ -440,7 +453,6 @@
         }
       }
 
-      /* search */
       searchBtn.addEventListener("click", async (e) => {
         e.preventDefault();
         await doSearch();
@@ -449,7 +461,9 @@
         const q = (searchInput.value || "").trim().toLowerCase();
         const status = (filterStatus.value || "").trim();
         try {
-          const res = await fetch(API_BASE);
+          const res = await fetch(API_BASE, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
           const list = await res.json();
           let filtered = list;
           if (q)
@@ -468,7 +482,6 @@
         }
       }
 
-      /* boot */
       bootLoad();
     </script>
   </body>
