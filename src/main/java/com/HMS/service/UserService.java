@@ -2,8 +2,13 @@ package com.HMS.service;
 
 import com.HMS.entity.User;
 import com.HMS.repository.UserRepository;
-import org.springframework.security.core.userdetails.*;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -16,18 +21,18 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // 🔍 Find user by username
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        // ✅ Using roles() automatically adds ROLE_ prefix internally
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getUsername())
-                .password(user.getPassword())
-                .roles(user.getRole().name()) // converts ADMIN → ROLE_ADMIN
-                .build();
-    }
+        // ✅ Add "ROLE_" prefix to make Spring Security recognize the role
+        String roleName = user.getRole().name(); // e.g., ADMIN or RECEPTIONIST
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + roleName);
 
-    public void saveUser(User user) {
-        userRepository.save(user);
+        // ✅ Return a Spring Security user with correct role
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                List.of(authority));
     }
 }

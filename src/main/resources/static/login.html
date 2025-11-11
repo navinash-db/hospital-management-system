@@ -19,6 +19,7 @@
     <div class="card" style="width: 360px; padding: 30px; text-align: center">
       <h2 class="card__title">Hospital Login</h2>
 
+      <!-- Login Form -->
       <form id="loginForm" style="margin-top: 20px">
         <div style="margin-bottom: 15px; text-align: left">
           <label class="label" for="username">Username</label>
@@ -41,6 +42,7 @@
         </button>
       </form>
 
+      <!-- Error message -->
       <p
         id="errorMsg"
         class="muted"
@@ -51,7 +53,7 @@
     </div>
 
     <script>
-      // ✅ Use relative path (since static frontend runs on same port)
+      // ✅ Point to your backend login endpoint
       const API_URL = "/auth/login";
 
       document
@@ -62,52 +64,55 @@
           const username = document.getElementById("username").value.trim();
           const password = document.getElementById("password").value.trim();
           const errorMsg = document.getElementById("errorMsg");
-
-          // Hide any previous message
           errorMsg.style.display = "none";
 
+          // Prepare form data for Spring form-based login
+          const formData = new URLSearchParams();
+          formData.append("username", username);
+          formData.append("password", password);
+
           try {
+            // Use fetch to send credentials to Spring Security's login endpoint
             const res = await fetch(API_URL, {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ username, password }),
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: formData.toString(),
             });
 
             console.log("Response status:", res.status);
 
-            // Handle non-200 cases
+            // If Spring redirects (302), follow the redirect manually
+            if (res.redirected) {
+              window.location.href = res.url;
+              return;
+            }
+
+            // Handle wrong credentials or unexpected responses
             if (!res.ok) {
-              errorMsg.textContent = "Login failed. Check credentials.";
+              errorMsg.textContent = "Invalid username or password.";
               errorMsg.style.display = "block";
               return;
             }
 
-            // Verify response type (some servers may return HTML instead of JSON)
-            const contentType = res.headers.get("content-type");
-            if (!contentType || !contentType.includes("application/json")) {
-              errorMsg.textContent = "Unexpected server response.";
-              errorMsg.style.display = "block";
-              console.log("Response not JSON:", await res.text());
-              return;
-            }
+            // Success → manually get current user role (optional)
+            const userResponse = await fetch("/auth/me");
+            if (userResponse.ok) {
+              const user = await userResponse.json();
+              console.log("User info:", user);
 
-            // Parse JSON response
-            const data = await res.json();
-            console.log("Login response:", data);
-
-            // Store token and role in localStorage
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("role", data.role);
-            localStorage.setItem("username", data.username);
-
-            // Redirect based on role
-            if (data.role === "ADMIN") {
-              window.location.href = "doctors.html";
-            } else if (data.role === "RECEPTIONIST") {
-              window.location.href = "patients.html";
+              if (user.role === "ADMIN") {
+                window.location.href = "doctors.html";
+              } else if (user.role === "RECEPTIONIST") {
+                window.location.href = "patients.html";
+              } else {
+                errorMsg.textContent = "Unknown role. Contact admin.";
+                errorMsg.style.display = "block";
+              }
             } else {
-              errorMsg.textContent = "Unknown role. Contact admin.";
-              errorMsg.style.display = "block";
+              // Fallback redirect if /auth/me not implemented
+              window.location.href = "doctors.html";
             }
           } catch (err) {
             console.error("Login error:", err);

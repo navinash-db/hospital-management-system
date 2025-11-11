@@ -69,7 +69,10 @@
       <!-- Header -->
       <header class="header">
         <h1 class="title">Appointment Management</h1>
-        <a class="btn" href="index.html">Home</a>
+        <div style="display: flex; gap: 10px">
+          <a class="btn" href="index.html">Home</a>
+          <button class="btn" id="logoutBtn">Logout</button>
+        </div>
       </header>
 
       <div class="grid">
@@ -198,28 +201,15 @@
     <script>
       /* ---------------- Secure Appointment Management ---------------- */
 
-      const API_BASE = "http://localhost:8080/api";
-      const token = localStorage.getItem("token");
-      const role = localStorage.getItem("role");
+      const API_BASE = "/api";
 
-      // ✅ Redirect if not logged in
-      if (!token) {
-        alert("Unauthorized! Please log in.");
-        window.location.href = "login.html";
-      }
-
-      // ✅ Restrict non-authorized roles (only ADMIN or RECEPTIONIST)
-      if (!(role === "ADMIN" || role === "RECEPTIONIST")) {
-        alert(
-          "Access denied! Only Admin or Receptionist can access Appointments."
+      // ✅ Logout
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        fetch("/auth/logout", { method: "POST", credentials: "include" }).then(
+          () => {
+            window.location.href = "login.html?logout=true";
+          }
         );
-        window.location.href = "login.html";
-      }
-
-      // Common helper for authorized requests
-      const authHeaders = (contentType = "application/json") => ({
-        "Content-Type": contentType,
-        Authorization: `Bearer ${token}`,
       });
 
       const tableBody = document.getElementById("appointmentTableBody");
@@ -241,7 +231,7 @@
       async function loadAppointments() {
         try {
           const res = await fetch(`${API_BASE}/appointments`, {
-            headers: authHeaders(),
+            credentials: "include",
           });
           if (!res.ok) throw new Error("Failed to load appointments");
           const data = await res.json();
@@ -297,7 +287,7 @@
       async function loadDoctors() {
         try {
           const res = await fetch(`${API_BASE}/doctors`, {
-            headers: authHeaders(),
+            credentials: "include",
           });
           const doctors = await res.json();
           doctorSelect.innerHTML = '<option value="">Select Doctor</option>';
@@ -315,7 +305,7 @@
       async function loadPatients() {
         try {
           const res = await fetch(`${API_BASE}/patients`, {
-            headers: authHeaders(),
+            credentials: "include",
           });
           const patients = await res.json();
           patientSelect.innerHTML = '<option value="">Select Patient</option>';
@@ -345,8 +335,9 @@
           try {
             const res = await fetch(`${API_BASE}/appointments`, {
               method: "POST",
-              headers: authHeaders(),
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify(body),
+              credentials: "include",
             });
 
             if (res.ok) {
@@ -354,7 +345,7 @@
               e.target.reset();
               loadAppointments();
             } else {
-              alert("Failed to book appointment (unauthorized or invalid).");
+              alert("Failed to book appointment (" + res.status + ")");
             }
           } catch (err) {
             console.error("Book error:", err);
@@ -366,14 +357,15 @@
         try {
           const res = await fetch(`${API_BASE}/appointments/${id}`, {
             method: "PUT",
-            headers: authHeaders(),
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ status }),
+            credentials: "include",
           });
           if (res.ok) {
             alert("Status updated!");
             loadAppointments();
           } else {
-            alert("Update failed (unauthorized).");
+            alert("Update failed (" + res.status + ")");
           }
         } catch (err) {
           console.error("Update error:", err);
@@ -387,13 +379,13 @@
         try {
           const res = await fetch(`${API_BASE}/appointments/${id}`, {
             method: "DELETE",
-            headers: authHeaders(),
+            credentials: "include",
           });
           if (res.ok) {
             alert("Appointment deleted!");
             loadAppointments();
           } else {
-            alert("Delete failed (unauthorized).");
+            alert("Delete failed (" + res.status + ")");
           }
         } catch (err) {
           console.error("Delete error:", err);

@@ -12,7 +12,10 @@
       <!-- Page Header -->
       <header class="header">
         <h1 class="title">Billing Management</h1>
-        <a class="btn" href="index.html">Home</a>
+        <div style="display: flex; gap: 10px">
+          <a class="btn" href="index.html">Home</a>
+          <button class="btn" id="logoutBtn">Logout</button>
+        </div>
       </header>
 
       <div class="grid">
@@ -163,15 +166,21 @@
       const patientSelect = document.getElementById("patientSelect");
       const phoneInput = document.getElementById("patientPhone");
 
-      let patients = [];
+      /* ---------- LOGOUT ---------- */
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        fetch("/auth/logout", { method: "POST", credentials: "include" }).then(
+          () => {
+            window.location.href = "login.html?logout=true";
+          }
+        );
+      });
 
       /* ========== Load Patients for Dropdown ========== */
       async function loadPatients() {
         try {
-          const res = await fetch(PATIENT_API);
+          const res = await fetch(PATIENT_API, { credentials: "include" });
           if (!res.ok) throw new Error("Failed to load patients");
           const data = await res.json();
-          patients = data;
 
           patientSelect.innerHTML =
             '<option value="">Select patient</option>' +
@@ -191,7 +200,7 @@
       }
 
       /* ========== Auto-fill phone on select ========== */
-      patientSelect.addEventListener("change", (e) => {
+      patientSelect.addEventListener("change", () => {
         const selected = patientSelect.options[patientSelect.selectedIndex];
         phoneInput.value = selected.dataset.phone || "";
       });
@@ -199,7 +208,7 @@
       /* ========== Load Billing Records ========== */
       async function loadBillings() {
         try {
-          const res = await fetch(BILL_API);
+          const res = await fetch(BILL_API, { credentials: "include" });
           if (!res.ok) throw new Error("Failed to fetch bills");
           const list = await res.json();
           renderTable(list);
@@ -252,10 +261,14 @@
       async function deleteBill(id) {
         if (!confirm("Delete this billing record?")) return;
         try {
-          const res = await fetch(`${BILL_API}/${id}`, { method: "DELETE" });
+          const res = await fetch(`${BILL_API}/${id}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
           if (!res.ok) throw new Error("Delete failed");
           loadBillings();
         } catch (err) {
+          console.error(err);
           alert("Delete failed.");
         }
       }
@@ -289,6 +302,7 @@
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dto),
+            credentials: "include",
           });
           if (!res.ok) {
             const body = await res.json().catch(() => ({}));
@@ -318,19 +332,24 @@
           .getElementById("filterPayment")
           .value.trim()
           .toLowerCase();
-        const res = await fetch(BILL_API);
-        const list = await res.json();
 
-        const filtered = list.filter((b) => {
-          const matchName =
-            (b.patientName || "").toLowerCase().includes(q) ||
-            (b.patientPhone || "").includes(q);
-          const matchStatus = status
-            ? (b.paymentStatus || "").toLowerCase() === status
-            : true;
-          return matchName && matchStatus;
-        });
-        renderTable(filtered);
+        try {
+          const res = await fetch(BILL_API, { credentials: "include" });
+          const list = await res.json();
+
+          const filtered = list.filter((b) => {
+            const matchName =
+              (b.patientName || "").toLowerCase().includes(q) ||
+              (b.patientPhone || "").includes(q);
+            const matchStatus = status
+              ? (b.paymentStatus || "").toLowerCase() === status
+              : true;
+            return matchName && matchStatus;
+          });
+          renderTable(filtered);
+        } catch (err) {
+          console.error(err);
+        }
       }
 
       /* ========== Boot ========== */

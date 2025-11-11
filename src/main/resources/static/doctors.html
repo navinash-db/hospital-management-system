@@ -17,7 +17,7 @@
         </div>
       </header>
 
-      <!-- Doctor Directory -->
+      <!-- Directory -->
       <section class="card">
         <div class="card__header">
           <h2 class="card__title">Directory</h2>
@@ -40,13 +40,6 @@
         <div class="card__body">
           <div class="table-wrap">
             <table id="doctorsTable">
-              <colgroup>
-                <col class="pt-name" />
-                <col class="pt-email" />
-                <col class="pt-phone" />
-                <col class="pt-status" />
-                <col class="pt-actions" />
-              </colgroup>
               <thead>
                 <tr>
                   <th>Name</th>
@@ -59,18 +52,14 @@
                   <th style="text-align: center">Actions</th>
                 </tr>
               </thead>
-              <tbody id="doctorsTbody">
-                <!-- populated by JS -->
-              </tbody>
+              <tbody id="doctorsTbody"></tbody>
             </table>
           </div>
           <p class="muted">Loaded from GET <code>/api/doctors</code>.</p>
         </div>
       </section>
 
-      <div style="height: 28px"></div>
-
-      <!-- Add / Edit Doctor -->
+      <!-- Add / Edit -->
       <aside class="card">
         <div class="card__header">
           <h2 class="card__title">Add / Edit Doctor</h2>
@@ -79,25 +68,25 @@
           <form id="doctorForm" class="grid">
             <input id="editingId" type="hidden" />
 
-            <label class="label"
-              >Full Name
+            <label class="label">
+              Full Name
               <input id="doctorName" class="input" required />
             </label>
 
             <div class="two-col">
-              <label class="label"
-                >Specialization
+              <label class="label">
+                Specialization
                 <select id="specialization" class="select" required>
                   <option value="">Select specialization</option>
-                  <option value="General Medicine">General Medicine</option>
-                  <option value="Cardiology">Cardiology</option>
-                  <option value="Neurology">Neurology</option>
-                  <option value="Orthopedics">Orthopedics</option>
+                  <option>General Medicine</option>
+                  <option>Cardiology</option>
+                  <option>Neurology</option>
+                  <option>Orthopedics</option>
                 </select>
               </label>
 
-              <label class="label"
-                >Qualification
+              <label class="label">
+                Qualification
                 <input
                   id="qualification"
                   class="input"
@@ -107,18 +96,18 @@
             </div>
 
             <div class="two-col">
-              <label class="label"
-                >Gender
+              <label class="label">
+                Gender
                 <select id="gender" class="select">
                   <option value="">Select gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
+                  <option>Male</option>
+                  <option>Female</option>
+                  <option>Other</option>
                 </select>
               </label>
 
-              <label class="label"
-                >Experience
+              <label class="label">
+                Experience
                 <input
                   id="experience"
                   class="input"
@@ -128,18 +117,18 @@
             </div>
 
             <div class="two-col">
-              <label class="label"
-                >Phone
+              <label class="label">
+                Phone
                 <input id="phoneNumber" class="input" placeholder="+91..." />
               </label>
-              <label class="label"
-                >Email
+              <label class="label">
+                Email
                 <input id="email" class="input" type="email" />
               </label>
             </div>
 
-            <label class="label"
-              >Address
+            <label class="label">
+              Address
               <textarea
                 id="address"
                 class="textarea"
@@ -147,8 +136,8 @@
               ></textarea>
             </label>
 
-            <label class="label"
-              >Status
+            <label class="label">
+              Status
               <select id="status" class="select">
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
@@ -167,39 +156,21 @@
               <button type="button" id="clearBtn" class="btn">Clear</button>
               <button id="saveBtn" class="btn btn--ok">Save Doctor</button>
             </div>
-
-            <p class="muted" style="margin-top: 18px">
-              Submitted to POST/PUT <code>/api/doctors</code>.
-            </p>
           </form>
         </div>
       </aside>
     </div>
 
     <script>
-      /* ---------------------- Secure Doctor Management ---------------------- */
+      const API_BASE = "/api/doctors";
 
-      const API_BASE = "http://localhost:8080/api/doctors";
-      const token = localStorage.getItem("token");
-      const role = localStorage.getItem("role");
-
-      // Redirect if not logged in
-      if (!token) {
-        alert("Unauthorized! Please log in.");
-        window.location.href = "login.html";
-      }
-
-      // Restrict non-admin users
-      if (role !== "ADMIN") {
-        alert("Access denied! Only Admin can access Doctor Management.");
-        window.location.href = "patients.html";
-      }
-
-      // Logout
+      /* ------------ LOGOUT ------------ */
       document.getElementById("logoutBtn").addEventListener("click", () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
-        window.location.href = "login.html";
+        fetch("/auth/logout", { method: "POST", credentials: "include" }).then(
+          () => {
+            window.location.href = "login.html?logout=true";
+          }
+        );
       });
 
       const tbody = document.getElementById("doctorsTbody");
@@ -215,17 +186,15 @@
       const address = document.getElementById("address");
       const status = document.getElementById("status");
       const clearBtn = document.getElementById("clearBtn");
-
       const searchBtn = document.getElementById("btnSearch");
       const searchInput = document.getElementById("searchInput");
       const filterStatus = document.getElementById("filterStatus");
 
+      /* ------------ LOAD LIST ------------ */
       async function bootLoad() {
         try {
-          const res = await fetch(API_BASE, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (!res.ok) throw new Error("Failed to load doctors");
+          const res = await fetch(API_BASE, { credentials: "include" });
+          if (!res.ok) throw new Error("Failed to load doctors: " + res.status);
           const list = await res.json();
           renderList(list);
         } catch (err) {
@@ -242,7 +211,6 @@
             '<tr><td colspan="8" class="muted">No doctors found.</td></tr>';
           return;
         }
-
         list.forEach((d) => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
@@ -262,18 +230,19 @@
               <button class="btn btn-delete" onclick="deleteDoctor(${
                 d.id
               })">Delete</button>
-            </td>
-          `;
+            </td>`;
           tbody.appendChild(tr);
         });
       }
 
+      /* ------------ CLEAR FORM ------------ */
       function clearForm() {
         form.reset();
         editingId.value = "";
       }
       clearBtn.addEventListener("click", clearForm);
 
+      /* ------------ EDIT ------------ */
       function editDoctor(d) {
         editingId.value = d.id || "";
         doctorName.value = d.doctorName || "";
@@ -288,30 +257,27 @@
         window.scrollTo({ top: form.offsetTop - 20, behavior: "smooth" });
       }
 
+      /* ------------ DELETE ------------ */
       async function deleteDoctor(id) {
         if (!confirm("Delete this doctor?")) return;
         try {
           const res = await fetch(`${API_BASE}/${id}`, {
             method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
+            credentials: "include", // ✅ sends session cookie
           });
-          if (!res.ok) throw new Error("Failed to delete");
+          if (!res.ok) throw new Error("Failed to delete: " + res.status);
           await bootLoad();
         } catch (err) {
           console.error(err);
-          alert("Delete failed. See console.");
+          alert("Delete failed.");
         }
       }
 
+      /* ------------ SAVE / UPDATE ------------ */
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        await submitForm();
-      });
-
-      async function submitForm() {
         const id = editingId.value || null;
         const payload = {
-          id: id ? Number(id) : null,
           doctorName: doctorName.value.trim(),
           specialization: specialization.value.trim(),
           qualification: qualification.value.trim(),
@@ -322,66 +288,53 @@
           address: address.value.trim(),
           status: status.value,
         };
+        const method = id ? "PUT" : "POST";
+        const url = id ? `${API_BASE}/${id}` : API_BASE;
 
         try {
-          const method = id ? "PUT" : "POST";
-          const url = id ? `${API_BASE}/${id}` : API_BASE;
           const res = await fetch(url, {
             method,
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
+            credentials: "include", // ✅ keeps session
           });
-
           if (!res.ok) {
-            const body = await res.json().catch(() => ({}));
-            alert("Save failed: " + (body.error || res.statusText));
+            console.error("Save failed:", res.status, await res.text());
+            alert("Save failed (" + res.status + ")");
             return;
           }
-
           clearForm();
           await bootLoad();
         } catch (err) {
           console.error("Save failed:", err);
+          alert("Network error while saving.");
         }
-      }
-
-      searchBtn.addEventListener("click", async (e) => {
-        e.preventDefault();
-        await doSearch();
       });
 
-      async function doSearch() {
-        const q = (searchInput.value || "").trim().toLowerCase();
-        const statusFilter = (filterStatus.value || "").trim();
-
+      /* ------------ SEARCH ------------ */
+      searchBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const q = searchInput.value.trim().toLowerCase();
+        const statusFilter = filterStatus.value.trim().toLowerCase();
         try {
-          const res = await fetch(API_BASE, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const res = await fetch(API_BASE, { credentials: "include" });
           const list = await res.json();
           let filtered = list;
-
           if (q)
             filtered = filtered.filter(
               (d) =>
                 (d.doctorName || "").toLowerCase().includes(q) ||
                 (d.specialization || "").toLowerCase().includes(q)
             );
-
           if (statusFilter)
             filtered = filtered.filter(
-              (d) =>
-                (d.status || "").toLowerCase() === statusFilter.toLowerCase()
+              (d) => (d.status || "").toLowerCase() === statusFilter
             );
-
           renderList(filtered);
         } catch (err) {
           console.error(err);
         }
-      }
+      });
 
       bootLoad();
     </script>
