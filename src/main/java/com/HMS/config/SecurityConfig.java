@@ -20,7 +20,6 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final UserService userService;
 
-    // ✅ Constructor injection
     public SecurityConfig(JwtAuthFilter jwtAuthFilter, UserService userService) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.userService = userService;
@@ -29,14 +28,38 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            // Disable CSRF since we're using JWT
             .csrf(csrf -> csrf.disable())
+
+            // Authorize requests
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()
+                // ✅ Publicly accessible routes
+                .requestMatchers(
+                    "/auth/**",
+                    "/login.html",
+                    "/index.html",
+                    "/styles.css",
+                    "/doctors.html",
+                    "/patients.html",
+                    "/appointments.html",
+                    "/billing.html",
+                    "/**/*.js",
+                    "/**/*.css",
+                    "/**/*.html"
+                ).permitAll()
+
+                // ✅ Role-based protected routes
                 .requestMatchers("/api/doctors/**").hasRole("ADMIN")
                 .requestMatchers("/api/patients/**", "/api/appointments/**", "/api/billing/**").hasRole("RECEPTIONIST")
+
+                // ✅ All other routes require authentication
                 .anyRequest().authenticated()
             )
+
+            // Use JWT (stateless session)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+            // Authentication provider & JWT filter
             .authenticationProvider(daoAuthenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
