@@ -10,7 +10,11 @@
     <div class="container">
       <header class="header">
         <h1 class="title">Patient Management</h1>
-        <a class="home-btn" href="login.html" onclick="logout()">Logout</a>
+        <div style="display: flex; gap: 10px">
+          <a class="btn" href="appointments.html">Appointments</a>
+          <a class="btn" href="billing.html">Billing</a>
+          <button class="btn" id="logoutBtn">Logout</button>
+        </div>
       </header>
 
       <!-- Directory card -->
@@ -182,7 +186,6 @@
       const modalName = document.getElementById("modalName");
       const modalNotes = document.getElementById("modalNotes");
 
-      // ---- Utility helpers ----
       function computeAgeFromDob(dobVal) {
         if (!dobVal) return null;
         const birth = new Date(dobVal);
@@ -298,7 +301,7 @@
             method,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
-            credentials: "include", // ✅ sends session cookie
+            credentials: "include",
           });
 
           if (!res.ok) {
@@ -320,7 +323,7 @@
         try {
           const res = await fetch(`${API_BASE}/${id}`, {
             method: "DELETE",
-            credentials: "include", // ✅ ensures session is sent
+            credentials: "include",
           });
           if (!res.ok) {
             alert("Delete failed (" + res.status + ")");
@@ -357,13 +360,13 @@
         }
       });
 
-      function logout() {
+      document.getElementById("logoutBtn").addEventListener("click", () => {
         fetch("/auth/logout", { method: "POST", credentials: "include" }).then(
           () => {
             window.location.href = "login.html?logout=true";
           }
         );
-      }
+      });
 
       bootLoad();
     </script>
