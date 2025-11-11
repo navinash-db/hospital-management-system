@@ -51,15 +51,19 @@
     </div>
 
     <script>
-      const API_URL = "http://localhost:8080/auth/login";
+      // ✅ Use relative path (since static frontend runs on same port)
+      const API_URL = "/auth/login";
 
       document
         .getElementById("loginForm")
         .addEventListener("submit", async (e) => {
           e.preventDefault();
+
           const username = document.getElementById("username").value.trim();
           const password = document.getElementById("password").value.trim();
           const errorMsg = document.getElementById("errorMsg");
+
+          // Hide any previous message
           errorMsg.style.display = "none";
 
           try {
@@ -69,17 +73,32 @@
               body: JSON.stringify({ username, password }),
             });
 
+            console.log("Response status:", res.status);
+
+            // Handle non-200 cases
             if (!res.ok) {
               errorMsg.textContent = "Login failed. Check credentials.";
               errorMsg.style.display = "block";
               return;
             }
 
+            // Verify response type (some servers may return HTML instead of JSON)
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+              errorMsg.textContent = "Unexpected server response.";
+              errorMsg.style.display = "block";
+              console.log("Response not JSON:", await res.text());
+              return;
+            }
+
+            // Parse JSON response
             const data = await res.json();
+            console.log("Login response:", data);
 
             // Store token and role in localStorage
             localStorage.setItem("token", data.token);
             localStorage.setItem("role", data.role);
+            localStorage.setItem("username", data.username);
 
             // Redirect based on role
             if (data.role === "ADMIN") {
@@ -91,7 +110,7 @@
               errorMsg.style.display = "block";
             }
           } catch (err) {
-            console.error(err);
+            console.error("Login error:", err);
             errorMsg.textContent = "Network error. Try again.";
             errorMsg.style.display = "block";
           }
