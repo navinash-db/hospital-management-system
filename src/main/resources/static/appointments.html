@@ -3,61 +3,196 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Appointments | Hospital Management System</title>
+    <title>Appointments — Hospital Management System</title>
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* 🔽 Collapsible Filter Styling */
+      .filter-toggle {
+        display: none;
+        align-items: center;
+        gap: 6px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 8px 12px;
+        border-radius: 10px;
+        color: var(--text);
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 10px;
+        transition: background 0.2s ease;
+      }
+
+      .filter-toggle:hover {
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .filter-arrow {
+        display: inline-block;
+        transition: transform 0.25s ease;
+      }
+
+      .filter-arrow.rotated {
+        transform: rotate(180deg);
+      }
+
+      .filter-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      @media (max-width: 768px) {
+        .filter-toggle {
+          display: flex;
+        }
+
+        .filter-panel {
+          display: none;
+          margin-top: 8px;
+          padding-top: 8px;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .filter-panel.active {
+          display: flex;
+        }
+      }
+    </style>
   </head>
-  <body>
+
+  <body class="appointments">
     <div class="container">
-      <h1>Appointment Management</h1>
+      <!-- Header -->
+      <header class="header">
+        <h1 class="title">Appointment Management</h1>
+        <a class="btn" href="index.html">Home</a>
+      </header>
 
-      <!-- Appointment Form -->
-      <section class="card">
-        <h2>Book Appointment</h2>
-        <form id="appointmentForm">
-          <label for="patientId">Select Patient:</label>
-          <select id="patientId" required>
-            <option value="">Loading...</option>
-          </select>
+      <div class="grid">
+        <!-- Appointment List -->
+        <section class="card">
+          <div class="card__header">
+            <h2 class="card__title">All Appointments</h2>
 
-          <label for="doctorId">Select Doctor:</label>
-          <select id="doctorId" required>
-            <option value="">Loading...</option>
-          </select>
+            <!-- Toggle Button (visible only on small screens) -->
+            <button id="toggleFilter" class="filter-toggle">
+              🔍 Filter Appointments
+              <span id="filterArrow" class="filter-arrow">▼</span>
+            </button>
 
-          <label for="appointmentDate">Appointment Date & Time:</label>
-          <input type="datetime-local" id="appointmentDate" required />
+            <!-- Filter Controls -->
+            <div id="filterPanel" class="search filter-panel">
+              <input
+                id="searchInput"
+                class="input"
+                placeholder="Search by patient or doctor"
+              />
+              <input id="filterDate" class="input" type="date" />
+              <select id="filterStatus" class="select">
+                <option value="">Status</option>
+                <option value="Booked">Booked</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+              <button id="filterBtn" class="btn">Filter</button>
+              <button id="resetBtn" class="btn">Reset</button>
+            </div>
+          </div>
 
-          <label for="notes">Notes:</label>
-          <textarea
-            id="notes"
-            placeholder="Enter reason for visit..."
-            rows="3"
-          ></textarea>
+          <!-- Table -->
+          <div class="card__body table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Patient</th>
+                  <th>Doctor</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="appointmentTableBody">
+                <!-- Data loads here -->
+              </tbody>
+            </table>
+          </div>
 
-          <button type="submit" class="btn btn--ok">Book Appointment</button>
-        </form>
-      </section>
+          <p class="muted" style="padding: 0 22px 20px">
+            Loaded from <code>GET /api/appointments</code>.
+          </p>
+        </section>
 
-      <!-- Appointments List -->
-      <section class="card">
-        <h2>All Appointments</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Patient</th>
-              <th>Doctor</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Notes</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="appointmentTableBody">
-            <!-- Data loads here -->
-          </tbody>
-        </table>
-      </section>
+        <!-- Appointment Form -->
+        <aside class="card">
+          <div class="card__header">
+            <h2 class="card__title">Book Appointment</h2>
+          </div>
+
+          <div class="card__body">
+            <form id="appointmentForm" class="grid">
+              <div>
+                <label class="label" for="patientId">Select Patient</label>
+                <select id="patientId" class="select" required>
+                  <option value="">Loading...</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="label" for="doctorId">Select Doctor</label>
+                <select id="doctorId" class="select" required>
+                  <option value="">Loading...</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="label" for="appointmentDate"
+                  >Appointment Date & Time</label
+                >
+                <input
+                  type="datetime-local"
+                  id="appointmentDate"
+                  class="input"
+                  required
+                />
+              </div>
+
+              <div>
+                <label class="label" for="notes">Notes</label>
+                <textarea
+                  id="notes"
+                  class="textarea"
+                  placeholder="Enter reason for visit..."
+                  rows="3"
+                ></textarea>
+              </div>
+
+              <div
+                style="
+                  display: flex;
+                  gap: 10px;
+                  justify-content: flex-end;
+                  flex-wrap: wrap;
+                "
+              >
+                <button type="reset" class="btn">Clear</button>
+                <button type="submit" class="btn btn--ok">
+                  Book Appointment
+                </button>
+              </div>
+            </form>
+
+            <p class="muted" style="margin-top: 18px">
+              Submitted to <code>POST /api/appointments</code>.
+            </p>
+          </div>
+        </aside>
+      </div>
     </div>
 
     <script>
@@ -65,35 +200,64 @@
       const tableBody = document.getElementById("appointmentTableBody");
       const patientSelect = document.getElementById("patientId");
       const doctorSelect = document.getElementById("doctorId");
+      const toggleFilter = document.getElementById("toggleFilter");
+      const filterPanel = document.getElementById("filterPanel");
+      const filterArrow = document.getElementById("filterArrow");
+
+      let appointmentsList = []; // store all appointments
+
+      // 🔽 Toggle filter panel
+      toggleFilter.addEventListener("click", () => {
+        filterPanel.classList.toggle("active");
+        filterArrow.classList.toggle("rotated");
+      });
 
       // Load all appointments
       async function loadAppointments() {
         const res = await fetch(`${API_BASE}/appointments`);
         const data = await res.json();
+        appointmentsList = data;
+        renderAppointments(data);
+      }
+
+      // Render table rows
+      function renderAppointments(list) {
         tableBody.innerHTML = "";
-        data.forEach((a) => {
+        if (!list || list.length === 0) {
+          tableBody.innerHTML =
+            '<tr><td colspan="7" class="muted">No appointments found.</td></tr>';
+          return;
+        }
+
+        list.forEach((a) => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
-          <td>${a.appointmentId}</td>
-          <td>${a.patientName}</td>
-          <td>${a.doctorName}</td>
-          <td>${
-            a.appointmentDate ? a.appointmentDate.replace("T", " ") : ""
-          }</td>
-          <td>${a.status}</td>
-          <td>${a.notes || ""}</td>
-          <td>
-            <button class="btn btn--ok" onclick="updateStatus(${
-              a.appointmentId
-            }, 'Completed')">Complete</button>
-            <button class="btn btn--warn" onclick="updateStatus(${
-              a.appointmentId
-            }, 'Cancelled')">Cancel</button>
-            <button class="btn btn--danger" onclick="deleteAppointment(${
-              a.appointmentId
-            })">Delete</button>
-          </td>
-        `;
+            <td>${a.appointmentId}</td>
+            <td>${a.patientName}</td>
+            <td>${a.doctorName}</td>
+            <td>${
+              a.appointmentDate ? a.appointmentDate.replace("T", " ") : ""
+            }</td>
+            <td><span class="pill ${
+              a.status === "Completed"
+                ? "pill--ok"
+                : a.status === "Cancelled"
+                ? "pill--warn"
+                : ""
+            }">${a.status}</span></td>
+            <td>${a.notes || ""}</td>
+            <td class="actions">
+              <button class="btn btn--ok" onclick="updateStatus(${
+                a.appointmentId
+              }, 'Completed')">Complete</button>
+              <button class="btn btn--warn" onclick="updateStatus(${
+                a.appointmentId
+              }, 'Cancelled')">Cancel</button>
+              <button class="btn btn-delete" onclick="deleteAppointment(${
+                a.appointmentId
+              })">Delete</button>
+            </td>
+          `;
           tableBody.appendChild(tr);
         });
       }
@@ -175,6 +339,46 @@
           loadAppointments();
         }
       }
+
+      // ---- Filtering logic (frontend only) ----
+      document.getElementById("filterBtn").addEventListener("click", () => {
+        const searchVal = document
+          .getElementById("searchInput")
+          .value.toLowerCase()
+          .trim();
+        const dateVal = document.getElementById("filterDate").value;
+        const statusVal = document.getElementById("filterStatus").value;
+
+        let filtered = appointmentsList;
+
+        if (searchVal)
+          filtered = filtered.filter(
+            (a) =>
+              a.patientName.toLowerCase().includes(searchVal) ||
+              a.doctorName.toLowerCase().includes(searchVal)
+          );
+
+        if (dateVal)
+          filtered = filtered.filter((a) =>
+            a.appointmentDate.startsWith(dateVal)
+          );
+
+        if (statusVal)
+          filtered = filtered.filter(
+            (a) =>
+              a.status && a.status.toLowerCase() === statusVal.toLowerCase()
+          );
+
+        renderAppointments(filtered);
+      });
+
+      // Reset filters
+      document.getElementById("resetBtn").addEventListener("click", () => {
+        document.getElementById("searchInput").value = "";
+        document.getElementById("filterDate").value = "";
+        document.getElementById("filterStatus").value = "";
+        renderAppointments(appointmentsList);
+      });
 
       // Initial load
       window.onload = () => {
