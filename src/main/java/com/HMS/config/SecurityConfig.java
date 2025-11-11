@@ -26,60 +26,50 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                // Public pages and static resources
-                .requestMatchers(
-                    "/auth/**",
-                    "/login.html",
-                    "/doctors.html",
-                    "/patients.html",
-                    "/appointments.html",
-                    "/billing.html",
-                    "/styles.css",
-                    "/js/",
-                    "/images/"
-                ).permitAll()
-
-                // ✅ Role-based access
-                .requestMatchers("/api/doctors/").hasRole("ADMIN")
-                .requestMatchers("/api/patients/", "/api/appointments/", "/api/billing/")
-                    .hasRole("RECEPTIONIST")
-
-                // All other endpoints require authentication
-                .anyRequest().authenticated()
-            )
-
-            // Stateless session (for JWT)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-            // Authentication provider and JWT filter
-            .authenticationProvider(daoAuthenticationProvider())
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        // ✅ Open endpoints
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(
+                                "/login.html",
+                                "/doctors.html",
+                                "/patients.html",
+                                "/appointments.html",
+                                "/billing.html",
+                                "/styles.css",
+                                "/js/**",
+                                "/images/**",
+                                "/favicon.ico")
+                        .permitAll()
+                        // ✅ Role-based protection
+                        .requestMatchers("/api/doctors/**").hasRole("ADMIN")
+                        .requestMatchers("/api/patients/**", "/api/appointments/**", "/api/billing/**")
+                        .hasRole("RECEPTIONIST")
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authProvider())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // Authentication provider
     @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider() {
+    public DaoAuthenticationProvider authProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
 
-    // Password encoder
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Authentication manager
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 }
