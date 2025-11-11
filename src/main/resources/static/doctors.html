@@ -11,7 +11,10 @@
     <div class="container">
       <header class="header">
         <h1 class="title">Doctor Management</h1>
-        <a class="home-btn" href="index.html">Home</a>
+        <div style="display: flex; gap: 10px">
+          <a class="home-btn" href="index.html">Home</a>
+          <button class="btn" id="logoutBtn">Logout</button>
+        </div>
       </header>
 
       <!-- Doctor Directory -->
@@ -174,12 +177,33 @@
     </div>
 
     <script>
-      /* ---------------------- Doctor Management ---------------------- */
-      const API_BASE = "/api/doctors";
+      /* ---------------------- Secure Doctor Management ---------------------- */
+
+      const API_BASE = "http://localhost:8080/api/doctors";
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role");
+
+      // Redirect if not logged in
+      if (!token) {
+        alert("Unauthorized! Please log in.");
+        window.location.href = "login.html";
+      }
+
+      // Restrict non-admin users
+      if (role !== "ADMIN") {
+        alert("Access denied! Only Admin can access Doctor Management.");
+        window.location.href = "patients.html";
+      }
+
+      // Logout
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        window.location.href = "login.html";
+      });
 
       const tbody = document.getElementById("doctorsTbody");
       const form = document.getElementById("doctorForm");
-
       const editingId = document.getElementById("editingId");
       const doctorName = document.getElementById("doctorName");
       const specialization = document.getElementById("specialization");
@@ -198,7 +222,9 @@
 
       async function bootLoad() {
         try {
-          const res = await fetch(API_BASE);
+          const res = await fetch(API_BASE, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
           if (!res.ok) throw new Error("Failed to load doctors");
           const list = await res.json();
           renderList(list);
@@ -265,7 +291,10 @@
       async function deleteDoctor(id) {
         if (!confirm("Delete this doctor?")) return;
         try {
-          const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+          const res = await fetch(`${API_BASE}/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
           if (!res.ok) throw new Error("Failed to delete");
           await bootLoad();
         } catch (err) {
@@ -281,9 +310,8 @@
 
       async function submitForm() {
         const id = editingId.value || null;
-
         const payload = {
-          id: id ? Number(id) : null, // ✅ ensures correct update
+          id: id ? Number(id) : null,
           doctorName: doctorName.value.trim(),
           specialization: specialization.value.trim(),
           qualification: qualification.value.trim(),
@@ -292,16 +320,18 @@
           phoneNumber: phoneNumber.value.trim(),
           email: email.value.trim(),
           address: address.value.trim(),
-          status: status.value, // ✅ status always included
+          status: status.value,
         };
 
         try {
           const method = id ? "PUT" : "POST";
           const url = id ? `${API_BASE}/${id}` : API_BASE;
-
           const res = await fetch(url, {
             method,
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify(payload),
           });
 
@@ -328,7 +358,9 @@
         const statusFilter = (filterStatus.value || "").trim();
 
         try {
-          const res = await fetch(API_BASE);
+          const res = await fetch(API_BASE, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
           const list = await res.json();
           let filtered = list;
 

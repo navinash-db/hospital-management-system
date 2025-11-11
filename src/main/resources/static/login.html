@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login — Hospital Management System</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body
+    style="
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: var(--bg);
+    "
+  >
+    <div class="card" style="width: 360px; padding: 30px; text-align: center">
+      <h2 class="card__title">Hospital Login</h2>
+
+      <form id="loginForm" style="margin-top: 20px">
+        <div style="margin-bottom: 15px; text-align: left">
+          <label class="label" for="username">Username</label>
+          <input class="input" id="username" name="username" required />
+        </div>
+
+        <div style="margin-bottom: 15px; text-align: left">
+          <label class="label" for="password">Password</label>
+          <input
+            class="input"
+            id="password"
+            name="password"
+            type="password"
+            required
+          />
+        </div>
+
+        <button type="submit" class="btn btn--ok" style="width: 100%">
+          Login
+        </button>
+      </form>
+
+      <p
+        id="errorMsg"
+        class="muted"
+        style="color: #f87171; margin-top: 14px; display: none"
+      >
+        Invalid username or password.
+      </p>
+    </div>
+
+    <script>
+      const API_URL = "http://localhost:8080/auth/login";
+
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const username = document.getElementById("username").value.trim();
+          const password = document.getElementById("password").value.trim();
+          const errorMsg = document.getElementById("errorMsg");
+          errorMsg.style.display = "none";
+
+          try {
+            const res = await fetch(API_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ username, password }),
+            });
+
+            if (!res.ok) {
+              errorMsg.textContent = "Login failed. Check credentials.";
+              errorMsg.style.display = "block";
+              return;
+            }
+
+            const data = await res.json();
+
+            // Store token and role in localStorage
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("role", data.role);
+
+            // Redirect based on role
+            if (data.role === "ADMIN") {
+              window.location.href = "doctors.html";
+            } else if (data.role === "RECEPTIONIST") {
+              window.location.href = "patients.html";
+            } else {
+              errorMsg.textContent = "Unknown role. Contact admin.";
+              errorMsg.style.display = "block";
+            }
+          } catch (err) {
+            console.error(err);
+            errorMsg.textContent = "Network error. Try again.";
+            errorMsg.style.display = "block";
+          }
+        });
+    </script>
+  </body>
+</html>
