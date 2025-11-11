@@ -10,7 +10,6 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-    // ✅ Constructor injection
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -18,12 +17,13 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
+        // ✅ Using roles() automatically adds ROLE_ prefix internally
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getUsername())
                 .password(user.getPassword())
-                .roles(user.getRole().name())
+                .roles(user.getRole().name())  // converts ADMIN → ROLE_ADMIN
                 .build();
     }
 

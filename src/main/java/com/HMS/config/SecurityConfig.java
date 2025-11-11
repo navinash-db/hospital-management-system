@@ -28,44 +28,41 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Disable CSRF since we're using JWT
             .csrf(csrf -> csrf.disable())
-
-            // Authorize requests
             .authorizeHttpRequests(auth -> auth
-                // ✅ Publicly accessible routes
+                // Public pages and static resources
                 .requestMatchers(
                     "/auth/**",
                     "/login.html",
-                    "/index.html",
-                    "/styles.css",
                     "/doctors.html",
                     "/patients.html",
                     "/appointments.html",
                     "/billing.html",
-                    "/**/*.js",
-                    "/**/*.css",
-                    "/**/*.html"
+                    "/styles.css",
+                    "/js/",
+                    "/images/"
                 ).permitAll()
 
-                // ✅ Role-based protected routes
-                .requestMatchers("/api/doctors/**").hasRole("ADMIN")
-                .requestMatchers("/api/patients/**", "/api/appointments/**", "/api/billing/**").hasRole("RECEPTIONIST")
+                // ✅ Role-based access
+                .requestMatchers("/api/doctors/").hasRole("ADMIN")
+                .requestMatchers("/api/patients/", "/api/appointments/", "/api/billing/")
+                    .hasRole("RECEPTIONIST")
 
-                // ✅ All other routes require authentication
+                // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
 
-            // Use JWT (stateless session)
+            // Stateless session (for JWT)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            // Authentication provider & JWT filter
+            // Authentication provider and JWT filter
             .authenticationProvider(daoAuthenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
+    // Authentication provider
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -74,11 +71,13 @@ public class SecurityConfig {
         return provider;
     }
 
+    // Password encoder
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // Authentication manager
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
